@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Flex, Text, Table } from "@mantine/core";
+import { Box, Button, Flex, Text, Table, useMantineTheme } from "@mantine/core";
 import { QuotationItem } from "../types";
 
 interface RoomProps {
@@ -12,15 +12,27 @@ interface RoomProps {
 }
 
 const Room: React.FC<RoomProps> = ({ room, onAddItem }) => {
+  const theme = useMantineTheme();
+
   return (
-    <Box>
+    <Box style={{ paddingInline: "24px" }}>
       <Flex
         align="center"
         justify="space-between"
-        style={{ width: "100%", padding: "5px", backgroundColor: "#e0e0e0" }}
+        style={{
+          width: "100%",
+          padding: "5px",
+          backgroundColor: theme.colors.primary[0],
+        }}
       >
-        <Text>{room.name}</Text>
-        <Button size="sm" onClick={onAddItem}>
+        <Text fw={500} size="18px">
+          {room.name}
+        </Text>
+        <Button
+          size="sm"
+          onClick={onAddItem}
+          style={{ backgroundColor: theme.colors.secondary[0], color: "black" }}
+        >
           Add Item
         </Button>
       </Flex>

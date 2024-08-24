@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { Text, Button, Box, Stack } from "@mantine/core";
+import {
+  Text,
+  Button,
+  Box,
+  Stack,
+  useMantineTheme,
+  Group,
+  Divider,
+} from "@mantine/core";
 import { Client, QuotationItem } from "../types";
 import ScopeOfWork from "../components/ScopeOfWork";
 import Room from "../components/Room";
@@ -18,6 +26,7 @@ interface Room {
 }
 
 const QuotationBuilder: React.FC = () => {
+  const theme = useMantineTheme();
   const { clientId } = useParams<{ clientId: string }>();
   const [client, setClient] = useState<Client | null>(null);
   const [scopes, setScopes] = useState<Scope[]>([]);
@@ -75,24 +84,41 @@ const QuotationBuilder: React.FC = () => {
     setNextItemId(nextItemId + 1);
   };
 
+  const workScopes = scopes.map((scope) => (
+    <ScopeOfWork
+      key={scope.id}
+      scope={scope}
+      onAddRoom={() => handleAddRoom(scope.id)}
+      onAddItem={(roomId) => handleAddItem(scope.id, roomId)}
+    />
+  ));
+
   return (
-    <Box style={{ height: "100vh", width: "100vw" }} p="md">
-      <Text fw={700} size="30px" mb="md">
-        Draft Quote
-      </Text>
-      <Button onClick={handleAddScope} mb="md">
-        New Scope of Work
-      </Button>
-      <Stack spacing="md">
-        {scopes.map((scope) => (
-          <ScopeOfWork
-            key={scope.id}
-            scope={scope}
-            onAddRoom={() => handleAddRoom(scope.id)}
-            onAddItem={(roomId) => handleAddItem(scope.id, roomId)}
-          />
-        ))}
-      </Stack>
+    <Box
+      p={"md"}
+      style={{
+        backgroundColor: theme.colors.primary[0],
+        height: "95%",
+        width: "95%",
+        borderRadius: "15px",
+        border: "1px solid rgba(158, 147, 110, 0.22)",
+      }}
+    >
+      <Group justify="space-between" style={{ padding: "20px" }}>
+        <Text fw={700} size="38px" mb="md">
+          Draft Quote
+        </Text>
+        <Button
+          onClick={handleAddScope}
+          mb="md"
+          style={{ backgroundColor: theme.colors.secondary[0], color: "black" }}
+        >
+          + Scope of Work
+        </Button>
+      </Group>
+      <Box>
+        <Stack spacing="md">{workScopes}</Stack>
+      </Box>
     </Box>
   );
 };
