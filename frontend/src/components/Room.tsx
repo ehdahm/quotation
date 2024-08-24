@@ -58,7 +58,12 @@ const Room: React.FC<RoomProps> = ({
         }}
       >
         <Group spacing="xs">
-          <ActionIcon color="red" onClick={onRemoveRoom} title="Remove Room">
+          <ActionIcon
+            variant="transparent"
+            color="red"
+            onClick={onRemoveRoom}
+            title="Remove Room"
+          >
             <IconX size={18} />
           </ActionIcon>
           <Text fw={500} size="18px">
@@ -105,10 +110,11 @@ const Room: React.FC<RoomProps> = ({
                     disabled={!item.isEditing}
                     rightSection={
                       <ActionIcon
+                        variant="transparent"
                         onClick={() => onCommitItem(item._id)}
-                        color="green"
+                        color="grey"
                       >
-                        <IconCheck size="1.125rem" />
+                        <IconSearch size="1.125rem" />
                       </ActionIcon>
                     }
                   />
@@ -168,14 +174,16 @@ const Room: React.FC<RoomProps> = ({
               <Table.Td>
                 {item.isEditing ? (
                   <ActionIcon
+                    variant="transparent"
                     style={{ width: "30px" }}
                     onClick={() => onCancelEdit(item._id)}
-                    color="red"
+                    color="black"
                   >
                     <IconX size="1.125rem" />
                   </ActionIcon>
                 ) : (
                   <ActionIcon
+                    variant="transparent"
                     onClick={() => onCommitItem(item._id)}
                     disabled={!item.skuId}
                   >

@@ -42,6 +42,10 @@ const QuotationBuilder: React.FC = () => {
     setNextScopeId(nextScopeId + 1);
   };
 
+  const handleRemoveScope = (scopeId: number) => {
+    setScopes(scopes.filter((scope) => scope.id !== scopeId));
+  };
+
   const handleAddRoom = (scopeId: number) => {
     const updatedScopes = scopes.map((scope) => {
       if (scope.id === scopeId) {
@@ -220,6 +224,7 @@ const QuotationBuilder: React.FC = () => {
             <ScopeOfWork
               key={scope.id}
               scope={scope}
+              onRemoveScope={() => handleRemoveScope(scope.id)}
               onAddRoom={() => handleAddRoom(scope.id)}
               onRemoveRoom={(roomId) => handleRemoveRoom(scope.id, roomId)}
               onAddItem={(roomId) => handleAddItem(scope.id, roomId)}

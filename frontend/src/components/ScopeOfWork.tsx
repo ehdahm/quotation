@@ -1,7 +1,16 @@
 import React from "react";
-import { Box, Button, Flex, Text, Stack, useMantineTheme } from "@mantine/core";
+import {
+  Box,
+  Button,
+  Flex,
+  Text,
+  Stack,
+  useMantineTheme,
+  ActionIcon,
+} from "@mantine/core";
 import Room from "./Room";
 import { QuotationItem } from "../types";
+import { IconX } from "@tabler/icons-react";
 
 interface ScopeOfWorkProps {
   scope: {
@@ -23,6 +32,7 @@ interface ScopeOfWorkProps {
   ) => void;
   onCommitItem: (roomId: number, itemId: string) => void;
   onCancelEdit: (roomId: number, itemId: string) => void;
+  onRemoveScope: () => void;
 }
 
 const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
@@ -33,6 +43,7 @@ const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
   onUpdateItem,
   onCommitItem,
   onCancelEdit,
+  onRemoveScope,
 }) => {
   const theme = useMantineTheme();
 
@@ -50,6 +61,15 @@ const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
           position: "relative",
         }}
       >
+        <ActionIcon
+          color="red"
+          variant="transparent"
+          onClick={onRemoveScope}
+          title="Remove Scope of Work"
+          style={{ position: "absolute", left: "10px" }}
+        >
+          <IconX size={18} />
+        </ActionIcon>
         <Text
           fw={600}
           tt="uppercase"
