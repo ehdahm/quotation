@@ -7,11 +7,9 @@ import {
   Stack,
   useMantineTheme,
   Group,
-  Divider,
 } from "@mantine/core";
 import { Client, QuotationItem } from "../types";
 import ScopeOfWork from "../components/ScopeOfWork";
-import Room from "../components/Room";
 
 interface Scope {
   id: number;
@@ -60,18 +58,39 @@ const QuotationBuilder: React.FC = () => {
     setNextRoomId(nextRoomId + 1);
   };
 
+  const handleRemoveRoom = (scopeId: number, roomId: number) => {
+    const updatedScopes = scopes.map((scope) => {
+      if (scope.id === scopeId) {
+        return {
+          ...scope,
+          rooms: scope.rooms.filter((room) => room.id !== roomId),
+        };
+      }
+      return scope;
+    });
+    setScopes(updatedScopes);
+  };
+
   const handleAddItem = (scopeId: number, roomId: number) => {
+    const newItem: QuotationItem = {
+      _id: `item-${nextItemId}`,
+      skuId: "",
+      name: "",
+      description: "",
+      quantity: 1,
+      unit: "",
+      cost: 0,
+      price: 0,
+      margin: 0,
+      total: 0,
+      isEditing: true,
+    };
+    setNextItemId(nextItemId + 1);
+
     const updatedScopes = scopes.map((scope) => {
       if (scope.id === scopeId) {
         const updatedRooms = scope.rooms.map((room) => {
           if (room.id === roomId) {
-            const newItem: QuotationItem = {
-              _id: `item-${nextItemId}`,
-              name: `Item ${nextItemId}`,
-              room: room.name,
-              quantity: 1,
-              price: 0,
-            };
             return { ...room, items: [...room.items, newItem] };
           }
           return room;
@@ -81,17 +100,96 @@ const QuotationBuilder: React.FC = () => {
       return scope;
     });
     setScopes(updatedScopes);
-    setNextItemId(nextItemId + 1);
   };
 
-  const workScopes = scopes.map((scope) => (
-    <ScopeOfWork
-      key={scope.id}
-      scope={scope}
-      onAddRoom={() => handleAddRoom(scope.id)}
-      onAddItem={(roomId) => handleAddItem(scope.id, roomId)}
-    />
-  ));
+  const handleUpdateItem = (
+    scopeId: number,
+    roomId: number,
+    itemId: string,
+    updates: Partial<QuotationItem>
+  ) => {
+    const updatedScopes = scopes.map((scope) => {
+      if (scope.id === scopeId) {
+        const updatedRooms = scope.rooms.map((room) => {
+          if (room.id === roomId) {
+            const updatedItems = room.items.map((item) => {
+              if (item._id === itemId) {
+                return { ...item, ...updates };
+              }
+              return item;
+            });
+            return { ...room, items: updatedItems };
+          }
+          return room;
+        });
+        return { ...scope, rooms: updatedRooms };
+      }
+      return scope;
+    });
+    setScopes(updatedScopes);
+  };
+
+  const handleCommitItem = async (
+    scopeId: number,
+    roomId: number,
+    itemId: string
+  ) => {
+    // Here you would typically make an API call to fetch item details based on SKU_ID
+    // For now, we'll simulate this with a timeout and some mock data
+    const updatedScopes = scopes.map((scope) => {
+      if (scope.id === scopeId) {
+        const updatedRooms = scope.rooms.map((room) => {
+          if (room.id === roomId) {
+            const updatedItems = room.items.map((item) => {
+              if (item._id === itemId) {
+                // Simulating fetched data
+                return {
+                  ...item,
+                  name: `Item for ${item.skuId}`,
+                  description: `Description for ${item.skuId}`,
+                  unit: "pcs",
+                  cost: 100,
+                  price: 150,
+                  margin: 50,
+                  total: 150 * item.quantity,
+                  isEditing: true,
+                };
+              }
+              return item;
+            });
+            return { ...room, items: updatedItems };
+          }
+          return room;
+        });
+        return { ...scope, rooms: updatedRooms };
+      }
+      return scope;
+    });
+    setScopes(updatedScopes);
+  };
+
+  const handleCancelEdit = (
+    scopeId: number,
+    roomId: number,
+    itemId: string
+  ) => {
+    const updatedScopes = scopes.map((scope) => {
+      if (scope.id === scopeId) {
+        const updatedRooms = scope.rooms.map((room) => {
+          if (room.id === roomId) {
+            const updatedItems = room.items.filter(
+              (item) => item._id !== itemId
+            );
+            return { ...room, items: updatedItems };
+          }
+          return room;
+        });
+        return { ...scope, rooms: updatedRooms };
+      }
+      return scope;
+    });
+    setScopes(updatedScopes);
+  };
 
   return (
     <Box
@@ -117,7 +215,26 @@ const QuotationBuilder: React.FC = () => {
         </Button>
       </Group>
       <Box>
-        <Stack spacing="md">{workScopes}</Stack>
+        <Stack spacing="md">
+          {scopes.map((scope) => (
+            <ScopeOfWork
+              key={scope.id}
+              scope={scope}
+              onAddRoom={() => handleAddRoom(scope.id)}
+              onRemoveRoom={(roomId) => handleRemoveRoom(scope.id, roomId)}
+              onAddItem={(roomId) => handleAddItem(scope.id, roomId)}
+              onUpdateItem={(roomId, itemId, updates) =>
+                handleUpdateItem(scope.id, roomId, itemId, updates)
+              }
+              onCommitItem={(roomId, itemId) =>
+                handleCommitItem(scope.id, roomId, itemId)
+              }
+              onCancelEdit={(roomId, itemId) =>
+                handleCancelEdit(scope.id, roomId, itemId)
+              }
+            />
+          ))}
+        </Stack>
       </Box>
     </Box>
   );

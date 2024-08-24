@@ -1,6 +1,19 @@
 import React from "react";
-import { Box, Button, Flex, Text, Table, useMantineTheme } from "@mantine/core";
+import {
+  Box,
+  Button,
+  Flex,
+  Text,
+  Table,
+  TextInput,
+  NumberInput,
+  ActionIcon,
+  useMantineTheme,
+  Textarea,
+  Group,
+} from "@mantine/core";
 import { QuotationItem } from "../types";
+import { IconSearch, IconCheck, IconX, IconTrash } from "@tabler/icons-react";
 
 interface RoomProps {
   room: {
@@ -8,11 +21,30 @@ interface RoomProps {
     name: string;
     items: QuotationItem[];
   };
+  onRemoveRoom: () => void;
   onAddItem: () => void;
+  onUpdateItem: (itemId: string, updates: Partial<QuotationItem>) => void;
+  onCommitItem: (itemId: string) => void;
+  onCancelEdit: (itemId: string) => void;
 }
 
-const Room: React.FC<RoomProps> = ({ room, onAddItem }) => {
+const Room: React.FC<RoomProps> = ({
+  room,
+  onRemoveRoom,
+  onAddItem,
+  onUpdateItem,
+  onCommitItem,
+  onCancelEdit,
+}) => {
   const theme = useMantineTheme();
+
+  const handleInputChange = (
+    itemId: string,
+    field: keyof QuotationItem,
+    value: string | number
+  ) => {
+    onUpdateItem(itemId, { [field]: value });
+  };
 
   return (
     <Box style={{ paddingInline: "24px" }}>
@@ -25,37 +57,136 @@ const Room: React.FC<RoomProps> = ({ room, onAddItem }) => {
           backgroundColor: theme.colors.primary[0],
         }}
       >
-        <Text fw={500} size="18px">
-          {room.name}
-        </Text>
+        <Group spacing="xs">
+          <ActionIcon color="red" onClick={onRemoveRoom} title="Remove Room">
+            <IconX size={18} />
+          </ActionIcon>
+          <Text fw={500} size="18px">
+            {room.name}
+          </Text>
+        </Group>
         <Button
           size="sm"
           onClick={onAddItem}
-          style={{ backgroundColor: theme.colors.secondary[0], color: "black" }}
+          style={{
+            backgroundColor: theme.colors.secondary[0],
+            color: "black",
+          }}
         >
           Add Item
         </Button>
       </Flex>
-      {room.items.length > 0 && (
-        <Table>
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Quantity</th>
-              <th>Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {room.items.map((item) => (
-              <tr key={item._id}>
-                <td>{item.name}</td>
-                <td>{item.quantity}</td>
-                <td>{item.price}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      )}
+      <Table style={{ tableLayout: "fixed" }}>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th style={{ width: "150px" }}>SKU ID</Table.Th>
+            <Table.Th style={{ width: "20%" }}>Item</Table.Th>
+            <Table.Th style={{ width: "30%" }}>Description</Table.Th>
+            <Table.Th style={{ width: "80px" }}>Quantity</Table.Th>
+            <Table.Th style={{ width: "60px" }}>Unit</Table.Th>
+            <Table.Th style={{ width: "100px" }}>Cost ($)</Table.Th>
+            <Table.Th style={{ width: "100px" }}>Price ($)</Table.Th>
+            <Table.Th style={{ width: "100px" }}>Margin (%)</Table.Th>
+            <Table.Th style={{ width: "100px" }}>Total ($)</Table.Th>
+            <Table.Th style={{ width: "100px" }}></Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {room.items.map((item) => (
+            <Table.Tr key={item._id}>
+              <Table.Td>
+                <Group>
+                  <TextInput
+                    style={{ width: "150px" }}
+                    value={item.skuId}
+                    onChange={(e) =>
+                      handleInputChange(item._id, "skuId", e.target.value)
+                    }
+                    disabled={!item.isEditing}
+                    rightSection={
+                      <ActionIcon
+                        onClick={() => onCommitItem(item._id)}
+                        color="green"
+                      >
+                        <IconCheck size="1.125rem" />
+                      </ActionIcon>
+                    }
+                  />
+                </Group>
+              </Table.Td>
+              <Table.Td>
+                <Textarea
+                  value={item.name}
+                  onChange={(e) =>
+                    handleInputChange(item._id, "name", e.target.value)
+                  }
+                  disabled={!item.isEditing}
+                  autosize
+                  minRows={1}
+                  maxRows={5}
+                />
+              </Table.Td>
+              <Table.Td>
+                <Textarea
+                  value={item.description}
+                  onChange={(e) =>
+                    handleInputChange(item._id, "description", e.target.value)
+                  }
+                  disabled={!item.isEditing}
+                  autosize
+                  minRows={1}
+                  maxRows={5}
+                />
+              </Table.Td>
+              <Table.Td>
+                <NumberInput
+                  value={item.quantity}
+                  onChange={(value) =>
+                    handleInputChange(item._id, "quantity", value)
+                  }
+                  disabled={!item.isEditing}
+                  min={1}
+                  style={{ width: "70px" }}
+                />
+              </Table.Td>
+              <Table.Td>{item.unit}</Table.Td>
+              <Table.Td>{item.cost.toFixed(2)}</Table.Td>
+              <Table.Td>
+                <NumberInput
+                  hideControls
+                  value={item.price}
+                  onChange={(value) =>
+                    handleInputChange(item._id, "price", value)
+                  }
+                  disabled={!item.isEditing}
+                  precision={2}
+                  style={{ width: "90px" }}
+                />
+              </Table.Td>
+              <Table.Td>{item.margin.toFixed(2)}</Table.Td>
+              <Table.Td>{item.total.toFixed(2)}</Table.Td>
+              <Table.Td>
+                {item.isEditing ? (
+                  <ActionIcon
+                    style={{ width: "30px" }}
+                    onClick={() => onCancelEdit(item._id)}
+                    color="red"
+                  >
+                    <IconX size="1.125rem" />
+                  </ActionIcon>
+                ) : (
+                  <ActionIcon
+                    onClick={() => onCommitItem(item._id)}
+                    disabled={!item.skuId}
+                  >
+                    <IconSearch size="1.125rem" />
+                  </ActionIcon>
+                )}
+              </Table.Td>
+            </Table.Tr>
+          ))}
+        </Table.Tbody>
+      </Table>
     </Box>
   );
 };

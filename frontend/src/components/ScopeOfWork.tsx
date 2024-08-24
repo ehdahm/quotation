@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Button, Flex, Text, Stack, useMantineTheme } from "@mantine/core";
 import Room from "./Room";
+import { QuotationItem } from "../types";
 
 interface ScopeOfWorkProps {
   scope: {
@@ -9,19 +10,29 @@ interface ScopeOfWorkProps {
     rooms: {
       id: number;
       name: string;
-      items: any[];
+      items: QuotationItem[];
     }[];
   };
-  onAddRoomlessItem: () => void;
   onAddRoom: () => void;
+  onRemoveRoom: (roomId: number) => void;
   onAddItem: (roomId: number) => void;
+  onUpdateItem: (
+    roomId: number,
+    itemId: string,
+    updates: Partial<QuotationItem>
+  ) => void;
+  onCommitItem: (roomId: number, itemId: string) => void;
+  onCancelEdit: (roomId: number, itemId: string) => void;
 }
 
 const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
   scope,
-  onAddRoomlessItem,
   onAddRoom,
+  onRemoveRoom,
   onAddItem,
+  onUpdateItem,
+  onCommitItem,
+  onCancelEdit,
 }) => {
   const theme = useMantineTheme();
 
@@ -52,18 +63,6 @@ const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
           {scope.title}
         </Text>
         <div style={{ marginLeft: "auto" }}>
-          {" "}
-          {/* Push button to the right */}
-          <Button
-            onClick={onAddRoomlessItem}
-            style={{
-              backgroundColor: theme.colors.primary[0],
-              color: "black",
-              marginRight: "8px",
-            }}
-          >
-            + Item
-          </Button>
           <Button
             onClick={onAddRoom}
             style={{
@@ -80,7 +79,13 @@ const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
           <Room
             key={room.id}
             room={room}
+            onRemoveRoom={() => onRemoveRoom(room.id)}
             onAddItem={() => onAddItem(room.id)}
+            onUpdateItem={(itemId, updates) =>
+              onUpdateItem(room.id, itemId, updates)
+            }
+            onCommitItem={(itemId) => onCommitItem(room.id, itemId)}
+            onCancelEdit={(itemId) => onCancelEdit(room.id, itemId)}
           />
         ))}
       </Stack>
