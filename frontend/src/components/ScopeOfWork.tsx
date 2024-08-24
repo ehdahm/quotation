@@ -62,7 +62,7 @@ const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
         }}
       >
         <ActionIcon
-          color="red"
+          color="black"
           variant="transparent"
           onClick={onRemoveScope}
           title="Remove Scope of Work"
