@@ -6,10 +6,24 @@ import ReactDOM from "react-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import QuotationBuilder from "./pages/QuotationBuilder";
-import ClientsPanel from "./components/ClientsPanel";
 
+// Create a custom theme
 const theme = createTheme({
   colorScheme: "light",
+  colors: {
+    background: ["#f2f1ea"], // Add more shades if needed
+    primary: ["#f7f7f4"], // For quotation pages and badge cards
+    secondary: ["#e3dfd0"], // For tabs or nav bars
+  },
+  components: {
+    Body: {
+      styles: (theme) => ({
+        root: {
+          backgroundColor: theme.colors.background[0],
+        },
+      }),
+    },
+  },
 });
 
 function App() {
