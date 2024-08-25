@@ -1,8 +1,8 @@
 const API_BASE_URL = "http://localhost:3000";
 
 export default async function sendRequest(
-  endpoint,
-  method = "GET",
+  endpoint: string,
+  method: string = "GET",
   payload = null
 ) {
   const url = `${API_BASE_URL}${endpoint}`;
