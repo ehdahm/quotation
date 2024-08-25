@@ -1,4 +1,4 @@
-const itemService = require("../services/item-service");
+const itemService = require("../service/items");
 
 async function getItemBySkuId(req, res) {
   try {
