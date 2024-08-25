@@ -10,6 +10,7 @@ import {
 } from "@mantine/core";
 import { Client, QuotationItem } from "../types";
 import ScopeOfWork from "../components/ScopeOfWork";
+import { getItemBySkuId } from "../apis/items";
 
 interface Scope {
   id: number;
@@ -138,35 +139,52 @@ const QuotationBuilder: React.FC = () => {
     roomId: number,
     itemId: string
   ) => {
-    const updatedScopes = scopes.map((scope) => {
-      if (scope.id === scopeId) {
-        const updatedRooms = scope.rooms.map((room) => {
-          if (room.id === roomId) {
-            const updatedItems = room.items.map((item) => {
-              if (item._id === itemId) {
-                return {
-                  ...item,
-                  name: `Item for ${item.skuId}`,
-                  description: `Description for ${item.skuId}`,
-                  unit: "pcs",
-                  cost: 100,
-                  price: 150,
-                  margin: 50,
-                  total: 150 * item.quantity,
-                  isEditing: true,
-                };
-              }
-              return item;
-            });
-            return { ...room, items: updatedItems };
+    try {
+      const updatedScopes = await Promise.all(
+        scopes.map(async (scope) => {
+          if (scope.id === scopeId) {
+            const updatedRooms = await Promise.all(
+              scope.rooms.map(async (room) => {
+                if (room.id === roomId) {
+                  const updatedItems = await Promise.all(
+                    room.items.map(async (item) => {
+                      if (item._id === itemId) {
+                        try {
+                          const fetchedItem = await getItemBySkuId(item.skuId);
+                          return {
+                            ...item,
+                            name: fetchedItem.name,
+                            description: fetchedItem.description,
+                            unit: fetchedItem.unit,
+                            cost: fetchedItem.cost,
+                            price: fetchedItem.price,
+                            margin: fetchedItem.margin,
+                            total: fetchedItem.price * item.quantity,
+                            isEditing: true,
+                          };
+                        } catch (error) {
+                          console.error("Error fetching item:", error);
+                          // error will keep existing item data
+                          return item;
+                        }
+                      }
+                      return item;
+                    })
+                  );
+                  return { ...room, items: updatedItems };
+                }
+                return room;
+              })
+            );
+            return { ...scope, rooms: updatedRooms };
           }
-          return room;
-        });
-        return { ...scope, rooms: updatedRooms };
-      }
-      return scope;
-    });
-    setScopes(updatedScopes);
+          return scope;
+        })
+      );
+      setScopes(updatedScopes);
+    } catch (error) {
+      console.error("Error updating scopes:", error);
+    }
   };
 
   const handleCancelEdit = (
