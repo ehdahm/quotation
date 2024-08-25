@@ -7,8 +7,14 @@ export interface Client {
 
 export interface QuotationItem {
   _id: string;
+  skuId: string;
   name: string;
-  room: string;
+  description: string;
   quantity: number;
+  unit: string;
+  cost: number;
   price: number;
+  margin: number;
+  total: number;
+  isEditing: boolean;
 }
