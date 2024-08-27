@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Text,
@@ -7,10 +7,15 @@ import {
   Stack,
   useMantineTheme,
   Group,
+  CheckIcon,
+  Combobox,
+  useCombobox,
 } from "@mantine/core";
 import { Client, QuotationItem } from "../types";
 import ScopeOfWork from "../components/ScopeOfWork";
-import { getItemBySkuId } from "../apis/items";
+import * as itemsService from "../services/items";
+import * as scopeOfWorksService from "../services/scopeOfWorks";
+import * as roomsService from "../services/rooms";
 
 interface Scope {
   id: number;
@@ -32,11 +37,44 @@ const QuotationBuilder: React.FC = () => {
   const [nextScopeId, setNextScopeId] = useState(1);
   const [nextRoomId, setNextRoomId] = useState(1);
   const [nextItemId, setNextItemId] = useState(1);
+  const [roomOptions, setRoomOptions] = useState<string[]>([]);
+  const [scopeOfWorkOptions, setScopeOfWorkOptions] = useState<string[]>([]);
 
-  const handleAddScope = () => {
+  useEffect(() => {
+    const fetchScopeOfWorkOptions = async () => {
+      try {
+        const scopeOfWorks = await scopeOfWorksService.getScopeOfWorks();
+        const scopeOFWorkNames = scopeOfWorks.map((scope) => scope.name);
+        setScopeOfWorkOptions(scopeOFWorkNames);
+      } catch (error) {
+        console.error("Error fetching scope of work options", error);
+      }
+    };
+
+    const fetchRoomOptions = async () => {
+      try {
+        const rooms = await roomsService.getRooms();
+        const roomNames = rooms.map((room) => room.name);
+        setRoomOptions(roomNames);
+      } catch (error) {
+        console.error("Error fetching room options.", error);
+      }
+    };
+
+    fetchScopeOfWorkOptions();
+    fetchRoomOptions();
+  }, []);
+
+  console.log(scopeOfWorkOptions, roomOptions);
+
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+  });
+
+  const handleAddScope = (selectedScope: string) => {
     const newScope: Scope = {
       id: nextScopeId,
-      title: `Scope of Work ${nextScopeId}`,
+      title: selectedScope,
       rooms: [],
     };
     setScopes([...scopes, newScope]);
@@ -150,7 +188,9 @@ const QuotationBuilder: React.FC = () => {
                     room.items.map(async (item) => {
                       if (item._id === itemId) {
                         try {
-                          const fetchedItem = await getItemBySkuId(item.skuId);
+                          const fetchedItem = await itemsService.getItemBySkuId(
+                            item.skuId
+                          );
                           return {
                             ...item,
                             name: fetchedItem.name,

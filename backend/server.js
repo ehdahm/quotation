@@ -13,6 +13,8 @@ var usersRoutes = require("./routes/users");
 var clientsRoutes = require("./routes/clients");
 var itemsRoutes = require("./routes/items");
 var quotationsRoutes = require("./routes/quotations");
+var roomsRoutes = require("./routes/rooms");
+var scopeOfWorksRoutes = require("./routes/scopeOfWorks");
 
 var app = express();
 
@@ -35,6 +37,8 @@ app.use("/api/users", usersRoutes);
 app.use("/api/clients", clientsRoutes);
 app.use("/api/items", itemsRoutes);
 app.use("/api/quotations", quotationsRoutes);
+app.use("/api/rooms", roomsRoutes);
+app.use("/api/scopeOfWorks", scopeOfWorksRoutes);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
