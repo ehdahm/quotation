@@ -13,7 +13,7 @@ import {
   Group,
 } from "@mantine/core";
 import { QuotationItem } from "../types";
-import { IconSearch, IconCheck, IconX, IconTrash } from "@tabler/icons-react";
+import { IconSearch, IconX } from "@tabler/icons-react";
 
 interface RoomProps {
   room: {
@@ -43,7 +43,23 @@ const Room: React.FC<RoomProps> = ({
     field: keyof QuotationItem,
     value: string | number
   ) => {
-    onUpdateItem(itemId, { [field]: value });
+    const item = room.items.find((i) => i._id === itemId);
+    if (!item) return;
+
+    const updates: Partial<QuotationItem> = { [field]: value };
+
+    if (field === "quantity") {
+      updates.total = item.price * Number(value);
+    } else if (field === "price") {
+      updates.margin = ((Number(value) - item.cost) / Number(value)) * 100;
+      updates.total = Number(value) * item.quantity;
+    } else if (field === "margin") {
+      const newPrice = item.cost / (1 - Number(value) / 100);
+      updates.price = newPrice;
+      updates.total = newPrice * item.quantity;
+    }
+
+    onUpdateItem(itemId, updates);
   };
 
   return (

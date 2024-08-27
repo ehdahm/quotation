@@ -1,5 +1,6 @@
 var express = require("express");
 var router = express.Router();
+var itemController = require("../controllers/items");
 
 // get items by SKU_ID,
 // returns whole item object
