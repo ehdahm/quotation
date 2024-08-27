@@ -7,7 +7,6 @@ function createItem(skuId, name, description, unit, cost, price, margin) {
     cost,
     price,
     margin,
-    calculateTotal: (quantity) => price * quantity,
   };
 }
 
