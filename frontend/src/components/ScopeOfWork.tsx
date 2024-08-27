@@ -7,6 +7,8 @@ import {
   Stack,
   useMantineTheme,
   ActionIcon,
+  useCombobox,
+  Combobox,
 } from "@mantine/core";
 import Room from "./Room";
 import { QuotationItem } from "../types";
@@ -22,7 +24,7 @@ interface ScopeOfWorkProps {
       items: QuotationItem[];
     }[];
   };
-  onAddRoom: () => void;
+  onAddRoom: (selectedRoom: string) => void;
   onRemoveRoom: (roomId: number) => void;
   onAddItem: (roomId: number) => void;
   onUpdateItem: (
@@ -33,6 +35,7 @@ interface ScopeOfWorkProps {
   onCommitItem: (roomId: number, itemId: string) => void;
   onCancelEdit: (roomId: number, itemId: string) => void;
   onRemoveScope: () => void;
+  roomOptions: string[];
 }
 
 const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
@@ -44,8 +47,13 @@ const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
   onCommitItem,
   onCancelEdit,
   onRemoveScope,
+  roomOptions,
 }) => {
   const theme = useMantineTheme();
+
+  const roomCombobox = useCombobox({
+    onDropdownClose: () => roomCombobox.resetSelectedOption(),
+  });
 
   return (
     <Box>
@@ -82,15 +90,38 @@ const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
           {scope.title}
         </Text>
         <div style={{ marginLeft: "auto" }}>
-          <Button
-            onClick={onAddRoom}
-            style={{
-              backgroundColor: theme.colors.primary[0],
-              color: "black",
+          <Combobox
+            store={roomCombobox}
+            width={250}
+            position="bottom-start"
+            withArrow
+            withinPortal={false}
+            onOptionSubmit={(val) => {
+              onAddRoom(val);
             }}
           >
-            + Room
-          </Button>
+            <Combobox.Target>
+              <Button
+                onClick={() => roomCombobox.toggleDropdown()}
+                style={{
+                  backgroundColor: theme.colors.primary[0],
+                  color: "black",
+                }}
+              >
+                + Room
+              </Button>
+            </Combobox.Target>
+
+            <Combobox.Dropdown>
+              <Combobox.Options>
+                {roomOptions.map((option) => (
+                  <Combobox.Option value={option} key={option}>
+                    {option}
+                  </Combobox.Option>
+                ))}
+              </Combobox.Options>
+            </Combobox.Dropdown>
+          </Combobox>
         </div>
       </Flex>
       <Stack spacing="xs" mt="sm">

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Text,
@@ -7,10 +7,15 @@ import {
   Stack,
   useMantineTheme,
   Group,
+  CheckIcon,
+  Combobox,
+  useCombobox,
 } from "@mantine/core";
 import { Client, QuotationItem } from "../types";
 import ScopeOfWork from "../components/ScopeOfWork";
-import { getItemBySkuId } from "../apis/items";
+import * as itemsService from "../services/items";
+import * as scopeOfWorksService from "../services/scopeOfWorks";
+import * as roomsService from "../services/rooms";
 
 interface Scope {
   id: number;
@@ -32,11 +37,44 @@ const QuotationBuilder: React.FC = () => {
   const [nextScopeId, setNextScopeId] = useState(1);
   const [nextRoomId, setNextRoomId] = useState(1);
   const [nextItemId, setNextItemId] = useState(1);
+  const [roomOptions, setRoomOptions] = useState<string[]>([]);
+  const [scopeOfWorkOptions, setScopeOfWorkOptions] = useState<string[]>([]);
 
-  const handleAddScope = () => {
+  const scopeCombobox = useCombobox({
+    onDropdownClose: () => scopeCombobox.resetSelectedOption(),
+  });
+
+  useEffect(() => {
+    const fetchScopeOfWorkOptions = async () => {
+      try {
+        const scopeOfWorks = await scopeOfWorksService.getScopeOfWorks();
+        const scopeOFWorkNames = scopeOfWorks.map((scope) => scope.name);
+        setScopeOfWorkOptions(scopeOFWorkNames);
+      } catch (error) {
+        console.error("Error fetching scope of work options", error);
+      }
+    };
+
+    const fetchRoomOptions = async () => {
+      try {
+        const rooms = await roomsService.getRooms();
+        const roomNames = rooms.map((room) => room.name);
+        setRoomOptions(roomNames);
+      } catch (error) {
+        console.error("Error fetching room options.", error);
+      }
+    };
+
+    fetchScopeOfWorkOptions();
+    fetchRoomOptions();
+  }, []);
+
+  console.log(scopeOfWorkOptions, roomOptions);
+
+  const handleAddScope = (selectedScope: string) => {
     const newScope: Scope = {
       id: nextScopeId,
-      title: `Scope of Work ${nextScopeId}`,
+      title: selectedScope,
       rooms: [],
     };
     setScopes([...scopes, newScope]);
@@ -47,12 +85,12 @@ const QuotationBuilder: React.FC = () => {
     setScopes(scopes.filter((scope) => scope.id !== scopeId));
   };
 
-  const handleAddRoom = (scopeId: number) => {
+  const handleAddRoom = (scopeId: number, selectedRoom: string) => {
     const updatedScopes = scopes.map((scope) => {
       if (scope.id === scopeId) {
         const newRoom: Room = {
           id: nextRoomId,
-          name: `Room ${nextRoomId}`,
+          name: selectedRoom,
           items: [],
         };
         return { ...scope, rooms: [...scope.rooms, newRoom] };
@@ -150,7 +188,9 @@ const QuotationBuilder: React.FC = () => {
                     room.items.map(async (item) => {
                       if (item._id === itemId) {
                         try {
-                          const fetchedItem = await getItemBySkuId(item.skuId);
+                          const fetchedItem = await itemsService.getItemBySkuId(
+                            item.skuId
+                          );
                           return {
                             ...item,
                             name: fetchedItem.name,
@@ -225,13 +265,38 @@ const QuotationBuilder: React.FC = () => {
         <Text fw={700} size="38px" mb="md">
           Draft Quote
         </Text>
-        <Button
-          onClick={handleAddScope}
-          mb="md"
-          style={{ backgroundColor: theme.colors.secondary[0], color: "black" }}
+        <Combobox
+          store={scopeCombobox}
+          width={250}
+          position="bottom-start"
+          withArrow
+          withinPortal={false}
+          onOptionSubmit={(val) => {
+            handleAddScope(val);
+          }}
         >
-          + Scope of Work
-        </Button>
+          <Combobox.Target>
+            <Button
+              onClick={() => scopeCombobox.toggleDropdown()}
+              style={{
+                backgroundColor: theme.colors.secondary[0],
+                color: "black",
+              }}
+            >
+              + Scope of Work
+            </Button>
+          </Combobox.Target>
+
+          <Combobox.Dropdown>
+            <Combobox.Options>
+              {scopeOfWorkOptions.map((option) => (
+                <Combobox.Option value={option} key={option}>
+                  {option}
+                </Combobox.Option>
+              ))}
+            </Combobox.Options>
+          </Combobox.Dropdown>
+        </Combobox>
       </Group>
       <Box>
         <Stack spacing="md">
@@ -239,7 +304,9 @@ const QuotationBuilder: React.FC = () => {
             <ScopeOfWork
               key={scope.id}
               scope={scope}
-              onAddRoom={() => handleAddRoom(scope.id)}
+              onAddRoom={(selectedRoom) =>
+                handleAddRoom(scope.id, selectedRoom)
+              }
               onRemoveRoom={(roomId) => handleRemoveRoom(scope.id, roomId)}
               onAddItem={(roomId) => handleAddItem(scope.id, roomId)}
               onUpdateItem={(roomId, itemId, updates) =>
@@ -252,6 +319,7 @@ const QuotationBuilder: React.FC = () => {
                 handleCancelEdit(scope.id, roomId, itemId)
               }
               onRemoveScope={() => handleRemoveScope(scope.id)}
+              roomOptions={roomOptions}
             />
           ))}
         </Stack>
