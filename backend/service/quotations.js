@@ -29,6 +29,29 @@ async function createQuotation(quotation, quotationItems) {
   }
 }
 
+async function getQuotation(quotationId) {
+  try {
+    const daoQuotation = await quotationDAO.getQuotation(quotationId);
+    const daoQuotationItems = await quotationItemsDAO.getQuotationItemsById(
+      quotationId
+    );
+
+    if (!daoQuotation) {
+      throw new Error("Quotation not found");
+    }
+
+    const data = {
+      quotation: daoQuotation,
+      quotationItems: daoQuotationItems,
+    };
+    return data;
+  } catch (error) {
+    console.error("Error in retrieving quotation:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   createQuotation,
+  getQuotation,
 };

@@ -20,6 +20,26 @@ async function createQuotation(req, res) {
   }
 }
 
+async function getQuotation(req, res) {
+  try {
+    const { quotationId } = req.params;
+    const quotationData = await quotationService.getQuotation(quotationId);
+
+    if (!quotation) {
+      return res.status(404).json({ message: "Quotation not found" });
+    }
+    console.log("quotation", quotationData);
+    res.json(quotationData);
+  } catch (error) {
+    if (error.message === "Quotation not found") {
+      res.status(404).json({ message: "Quotation not found" });
+    } else {
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  }
+}
+
 module.exports = {
   createQuotation,
+  getQuotation,
 };

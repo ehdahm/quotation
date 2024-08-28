@@ -3,9 +3,9 @@ const mongoose = require("mongoose");
 const quotationItemSchema = new mongoose.Schema(
   {
     user_id: {},
-    quotation_id: {},
-    scope_id: {},
-    room_id: {},
+    quotation_id: mongoose.ObjectId,
+    scope_id: mongoose.ObjectId,
+    room_id: mongoose.ObjectId,
     name: { type: String, required: true },
     description: { type: String },
     quantity: { type: Number, required: true },
@@ -24,6 +24,10 @@ const QuotationItem = mongoose.model("QuotationItem", quotationItemSchema);
 function insertManyQuotationItems(quotationItems) {
   return QuotationItem.insertMany(quotationItems);
 }
+async function getQuotationItemsById(quotation_id) {
+  return QuotationItem.find({ quotation_id });
+}
 module.exports = {
   insertManyQuotationItems,
+  getQuotationItemsById,
 };
