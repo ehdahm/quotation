@@ -7,38 +7,36 @@ import {
   Stack,
   useMantineTheme,
   Group,
-  CheckIcon,
   Combobox,
   useCombobox,
+  ActionIcon,
+  CheckIcon,
 } from "@mantine/core";
-import { Client, QuotationItem } from "../types";
+import { Client, QuotationItem, Quotation, Scope } from "../types";
 import ScopeOfWork from "../components/ScopeOfWork";
-import * as itemsService from "../services/items";
 import * as scopeOfWorksService from "../services/scopeOfWorks";
 import * as roomsService from "../services/rooms";
-
-interface Scope {
-  id: number;
-  title: string;
-  rooms: Room[];
-}
-
-interface Room {
-  id: number;
-  name: string;
-  items: QuotationItem[];
-}
+import * as itemsService from "../services/items";
+import * as quotationsService from "../services/quotations";
+import { getIdFromName } from "../utils/getIdFromName";
 
 const QuotationBuilder: React.FC = () => {
   const theme = useMantineTheme();
   const { clientId } = useParams<{ clientId: string }>();
   const [client, setClient] = useState<Client | null>(null);
   const [scopes, setScopes] = useState<Scope[]>([]);
-  const [nextScopeId, setNextScopeId] = useState(1);
-  const [nextRoomId, setNextRoomId] = useState(1);
-  const [nextItemId, setNextItemId] = useState(1);
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
+  const [rooms, setRooms] = useState<string[]>([]);
   const [scopeOfWorkOptions, setScopeOfWorkOptions] = useState<string[]>([]);
+  const [scopeOfWorks, setScopeOfWorks] = useState<string[]>([]);
+  const [quotation, setQuotation] = useState<Quotation>({
+    user_id: "mockUser", // You might want to set this from your auth context
+    client_id: clientId || "", // From the route params
+    total_cost: 0,
+    total_amount: 0,
+    profit_margin: 0,
+  });
+  const [quotationItems, setQuotationItems] = useState<QuotationItem[]>([]);
 
   const scopeCombobox = useCombobox({
     onDropdownClose: () => scopeCombobox.resetSelectedOption(),
@@ -49,6 +47,7 @@ const QuotationBuilder: React.FC = () => {
       try {
         const scopeOfWorks = await scopeOfWorksService.getScopeOfWorks();
         const scopeOFWorkNames = scopeOfWorks.map((scope) => scope.name);
+        setScopeOfWorks(scopeOfWorks);
         setScopeOfWorkOptions(scopeOFWorkNames);
       } catch (error) {
         console.error("Error fetching scope of work options", error);
@@ -60,6 +59,7 @@ const QuotationBuilder: React.FC = () => {
         const rooms = await roomsService.getRooms();
         const roomNames = rooms.map((room) => room.name);
         setRoomOptions(roomNames);
+        setRooms(rooms);
       } catch (error) {
         console.error("Error fetching room options.", error);
       }
@@ -69,39 +69,40 @@ const QuotationBuilder: React.FC = () => {
     fetchRoomOptions();
   }, []);
 
-  console.log(scopeOfWorkOptions, roomOptions);
-
   const handleAddScope = (selectedScope: string) => {
     const newScope: Scope = {
-      id: nextScopeId,
+      id: getIdFromName(scopeOfWorks, selectedScope),
       title: selectedScope,
       rooms: [],
     };
+    console.log("newScope", newScope);
     setScopes([...scopes, newScope]);
-    setNextScopeId(nextScopeId + 1);
   };
 
-  const handleRemoveScope = (scopeId: number) => {
+  const handleRemoveScope = (scopeId: string) => {
     setScopes(scopes.filter((scope) => scope.id !== scopeId));
+    setQuotationItems(
+      quotationItems.filter((item) => item.scopeId !== scopeId)
+    );
   };
 
-  const handleAddRoom = (scopeId: number, selectedRoom: string) => {
+  const handleAddRoom = (scopeId: string, selectedRoom: string) => {
     const updatedScopes = scopes.map((scope) => {
       if (scope.id === scopeId) {
         const newRoom: Room = {
-          id: nextRoomId,
+          id: getIdFromName(rooms, selectedRoom),
           name: selectedRoom,
           items: [],
         };
+        console.log("newRoom", newRoom);
         return { ...scope, rooms: [...scope.rooms, newRoom] };
       }
       return scope;
     });
     setScopes(updatedScopes);
-    setNextRoomId(nextRoomId + 1);
   };
 
-  const handleRemoveRoom = (scopeId: number, roomId: number) => {
+  const handleRemoveRoom = (scopeId: string, roomId: string) => {
     const updatedScopes = scopes.map((scope) => {
       if (scope.id === scopeId) {
         return {
@@ -112,11 +113,18 @@ const QuotationBuilder: React.FC = () => {
       return scope;
     });
     setScopes(updatedScopes);
+    setQuotationItems(
+      quotationItems.filter(
+        (item) => item.scopeId !== scopeId || item.roomId !== roomId
+      )
+    );
   };
 
-  const handleAddItem = (scopeId: number, roomId: number) => {
+  const handleAddItem = (scopeId: string, roomId: string) => {
     const newItem: QuotationItem = {
-      _id: `item-${nextItemId}`,
+      _id: `temp-${Date.now()}`, // Temporary ID
+      scopeId,
+      roomId,
       skuId: "",
       name: "",
       description: "",
@@ -128,7 +136,8 @@ const QuotationBuilder: React.FC = () => {
       total: 0,
       isEditing: true,
     };
-    setNextItemId(nextItemId + 1);
+    setQuotationItems([...quotationItems, newItem]);
+    console.log(`add-item: `, quotationItems);
 
     const updatedScopes = scopes.map((scope) => {
       if (scope.id === scopeId) {
@@ -143,95 +152,155 @@ const QuotationBuilder: React.FC = () => {
       return scope;
     });
     setScopes(updatedScopes);
+    updateOverallQuotation();
+  };
+
+  const updateOverallQuotation = () => {
+    const total_cost = quotationItems.reduce(
+      (sum, item) => sum + item.cost * item.quantity,
+      0
+    );
+    const total_amount = quotationItems.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+    const profit_margin = ((total_amount - total_cost) / total_cost) * 100;
+
+    setQuotation((prev) => ({
+      ...prev,
+      total_cost,
+      total_amount,
+      profit_margin,
+    }));
+    console.log(`quotationState `, quotation);
+    console.log(`quotaitonItemState `, quotationItems);
   };
 
   const handleUpdateItem = (
-    scopeId: number,
-    roomId: number,
+    scopeId: string,
+    roomId: string,
     itemId: string,
     updates: Partial<QuotationItem>
   ) => {
-    const updatedScopes = scopes.map((scope) => {
-      if (scope.id === scopeId) {
-        const updatedRooms = scope.rooms.map((room) => {
-          if (room.id === roomId) {
-            const updatedItems = room.items.map((item) => {
-              if (item._id === itemId) {
-                return { ...item, ...updates };
-              }
-              return item;
-            });
-            return { ...room, items: updatedItems };
-          }
-          return room;
-        });
-        return { ...scope, rooms: updatedRooms };
-      }
-      return scope;
-    });
-    setScopes(updatedScopes);
+    setQuotationItems((prevItems) =>
+      prevItems.map((item) =>
+        item.scopeId === scopeId &&
+        item.roomId === roomId &&
+        item._id === itemId
+          ? {
+              ...item,
+              ...updates,
+              total:
+                (updates.price ?? item.price) *
+                (updates.quantity ?? item.quantity),
+              margin:
+                updates.price && updates.cost
+                  ? ((updates.price - updates.cost) / updates.cost) * 100
+                  : item.margin,
+            }
+          : item
+      )
+    );
+
+    setScopes((prevScopes) =>
+      prevScopes.map((scope) =>
+        scope.id === scopeId
+          ? {
+              ...scope,
+              rooms: scope.rooms.map((room) =>
+                room.id === roomId
+                  ? {
+                      ...room,
+                      items: room.items.map((item) =>
+                        item._id === itemId
+                          ? {
+                              ...item,
+                              ...updates,
+                              total:
+                                (updates.price ?? item.price) *
+                                (updates.quantity ?? item.quantity),
+                              margin:
+                                updates.price && updates.cost
+                                  ? ((updates.price - updates.cost) /
+                                      updates.cost) *
+                                    100
+                                  : item.margin,
+                            }
+                          : item
+                      ),
+                    }
+                  : room
+              ),
+            }
+          : scope
+      )
+    );
+
+    // Update overall quotation
+    updateOverallQuotation();
   };
 
   const handleCommitItem = async (
-    scopeId: number,
-    roomId: number,
+    scopeId: string,
+    roomId: string,
     itemId: string
   ) => {
     try {
-      const updatedScopes = await Promise.all(
-        scopes.map(async (scope) => {
-          if (scope.id === scopeId) {
-            const updatedRooms = await Promise.all(
-              scope.rooms.map(async (room) => {
-                if (room.id === roomId) {
-                  const updatedItems = await Promise.all(
-                    room.items.map(async (item) => {
-                      if (item._id === itemId) {
-                        try {
-                          const fetchedItem = await itemsService.getItemBySkuId(
-                            item.skuId
-                          );
-                          return {
-                            ...item,
-                            name: fetchedItem.name,
-                            description: fetchedItem.description,
-                            unit: fetchedItem.unit,
-                            cost: fetchedItem.cost,
-                            price: fetchedItem.price,
-                            margin: fetchedItem.margin,
-                            total: fetchedItem.price * item.quantity,
-                            isEditing: true,
-                          };
-                        } catch (error) {
-                          console.error("Error fetching item:", error);
-                          // error will keep existing item data
-                          return item;
-                        }
-                      }
-                      return item;
-                    })
-                  );
-                  return { ...room, items: updatedItems };
-                }
-                return room;
-              })
-            );
-            return { ...scope, rooms: updatedRooms };
-          }
-          return scope;
-        })
+      const item = quotationItems.find((item) => item._id === itemId);
+      if (!item) {
+        console.error("Item not found");
+        return;
+      }
+
+      const fetchedItem = await itemsService.getItemBySkuId(item.skuId);
+      const updatedItem: QuotationItem = {
+        ...item,
+        name: fetchedItem.name,
+        description: fetchedItem.description,
+        unit: fetchedItem.unit,
+        cost: fetchedItem.cost,
+        price: fetchedItem.price,
+        margin: fetchedItem.margin,
+        total: fetchedItem.price * item.quantity,
+        isEditing: true,
+      };
+
+      setQuotationItems((prevItems) =>
+        prevItems.map((i) => (i._id === itemId ? updatedItem : i))
       );
+
+      const updatedScopes = scopes.map((scope) => {
+        if (scope.id === scopeId) {
+          const updatedRooms = scope.rooms.map((room) => {
+            if (room.id === roomId) {
+              const updatedItems = room.items.map((i) =>
+                i._id === itemId ? updatedItem : i
+              );
+              return { ...room, items: updatedItems };
+            }
+            return room;
+          });
+          return { ...scope, rooms: updatedRooms };
+        }
+        return scope;
+      });
       setScopes(updatedScopes);
+      console.log(`commit-item: `, quotationItems);
     } catch (error) {
-      console.error("Error updating scopes:", error);
+      console.error("Error committing item:", error);
     }
+    updateOverallQuotation();
   };
 
-  const handleCancelEdit = (
-    scopeId: number,
-    roomId: number,
+  const handleDeleteItem = (
+    scopeId: string,
+    roomId: string,
     itemId: string
   ) => {
+    setQuotationItems((prevItems) =>
+      prevItems.filter((item) => item._id !== itemId)
+    );
+
     const updatedScopes = scopes.map((scope) => {
       if (scope.id === scopeId) {
         const updatedRooms = scope.rooms.map((room) => {
@@ -248,6 +317,27 @@ const QuotationBuilder: React.FC = () => {
       return scope;
     });
     setScopes(updatedScopes);
+    updateOverallQuotation();
+  };
+
+  const handleSaveQuotation = async () => {
+    try {
+      const cleanedQuotationItems = quotationItems.map((item) => {
+        const { _id, isEditing, ...cleanedItem } = item;
+        return cleanedItem;
+      });
+
+      const quotationData = {
+        quotation,
+        quotationItems: cleanedQuotationItems,
+      };
+      console.log("onSaveQuotationData", quotationData);
+      const newQuotation = await quotationsService.saveQuotation(quotationData);
+      console.log("Quotation saved successfully:", newQuotation);
+      return newQuotation;
+    } catch (error) {
+      console.error("Error saving quotation:", error);
+    }
   };
 
   return (
@@ -262,9 +352,18 @@ const QuotationBuilder: React.FC = () => {
       }}
     >
       <Group justify="space-between" style={{ padding: "20px" }}>
-        <Text fw={700} size="38px" mb="md">
-          Draft Quote
-        </Text>
+        <Group>
+          <ActionIcon
+            variant="transparent"
+            onClick={handleSaveQuotation}
+            title="Save Quotation"
+          >
+            <CheckIcon size={18} />
+          </ActionIcon>
+          <Text fw={700} size="38px" mb="md">
+            Draft Quote
+          </Text>
+        </Group>
         <Combobox
           store={scopeCombobox}
           width={250}
@@ -272,6 +371,7 @@ const QuotationBuilder: React.FC = () => {
           withArrow
           withinPortal={false}
           onOptionSubmit={(val) => {
+            console.log("onOptionSubmit ", val);
             handleAddScope(val);
           }}
         >
@@ -315,8 +415,8 @@ const QuotationBuilder: React.FC = () => {
               onCommitItem={(roomId, itemId) =>
                 handleCommitItem(scope.id, roomId, itemId)
               }
-              onCancelEdit={(roomId, itemId) =>
-                handleCancelEdit(scope.id, roomId, itemId)
+              onDeleteItem={(roomId, itemId) =>
+                handleDeleteItem(scope.id, roomId, itemId)
               }
               onRemoveScope={() => handleRemoveScope(scope.id)}
               roomOptions={roomOptions}

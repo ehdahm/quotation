@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const quotationDAO = require("../daos/quotations");
 const quotationItemsDAO = require("../daos/quotationItems");
 
@@ -11,11 +12,16 @@ async function createQuotation(quotation, quotationItems) {
     // quotationItems is an array of objects
     const newQuotationItems = quotationItems.map((item) => ({
       ...item,
+      sku_id: item.skuId,
+      scope_id: new mongoose.Types.ObjectId(item.scopeId),
+      room_id: new mongoose.Types.ObjectId(item.roomId),
       quotation_id: daoQuotation._id,
     }));
+    console.log("newQuotationItems", newQuotationItems);
 
     const createdQuotationItems =
       await quotationItemsDAO.insertManyQuotationItems(newQuotationItems);
+    console.log("createdQuotationItems", createdQuotationItems);
 
     const createdQuotation = {
       quotation: daoQuotation,

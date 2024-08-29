@@ -25,7 +25,7 @@ interface RoomProps {
   onAddItem: () => void;
   onUpdateItem: (itemId: string, updates: Partial<QuotationItem>) => void;
   onCommitItem: (itemId: string) => void;
-  onCancelEdit: (itemId: string) => void;
+  onDeleteItem: (itemId: string) => void;
 }
 
 const Room: React.FC<RoomProps> = ({
@@ -34,7 +34,7 @@ const Room: React.FC<RoomProps> = ({
   onAddItem,
   onUpdateItem,
   onCommitItem,
-  onCancelEdit,
+  onDeleteItem,
 }) => {
   const theme = useMantineTheme();
 
@@ -188,24 +188,13 @@ const Room: React.FC<RoomProps> = ({
               <Table.Td>{item.margin.toFixed(2)}</Table.Td>
               <Table.Td>{item.total.toFixed(2)}</Table.Td>
               <Table.Td>
-                {item.isEditing ? (
-                  <ActionIcon
-                    variant="transparent"
-                    onClick={() => onCancelEdit(item._id)}
-                    color="red"
-                  >
-                    <IconX size="1.125rem" />
-                  </ActionIcon>
-                ) : (
-                  <ActionIcon
-                    variant="transparent"
-                    onClick={() => onCommitItem(item._id)}
-                    disabled={!item.skuId}
-                    color="blue"
-                  >
-                    <IconSearch size="1.125rem" />
-                  </ActionIcon>
-                )}
+                <ActionIcon
+                  variant="transparent"
+                  onClick={() => onDeleteItem(item._id)}
+                  color="red"
+                >
+                  <IconX size="1.125rem" />
+                </ActionIcon>
               </Table.Td>
             </Table.Tr>
           ))}
