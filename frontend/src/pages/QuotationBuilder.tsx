@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Text,
@@ -14,8 +14,6 @@ import {
 } from "@mantine/core";
 import { Client, QuotationItem, Quotation, Scope } from "../types";
 import ScopeOfWork from "../components/ScopeOfWork";
-import * as scopeOfWorksService from "../services/scopeOfWorks";
-import * as roomsService from "../services/rooms";
 import * as itemsService from "../services/items";
 import * as quotationsService from "../services/quotations";
 import { getIdFromName } from "../utils/getIdFromName";
@@ -100,7 +98,7 @@ const QuotationBuilder: React.FC = () => {
       _id: `temp-${Date.now()}`, // Temporary ID
       scope_id,
       room_id,
-      skuId: "",
+      sku_id: "",
       name: "",
       description: "",
       quantity: 1,

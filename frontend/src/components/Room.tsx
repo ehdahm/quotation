@@ -17,7 +17,7 @@ import { IconSearch, IconX } from "@tabler/icons-react";
 
 interface RoomProps {
   room: {
-    id: number;
+    id: string;
     name: string;
     items: QuotationItem[];
   };
@@ -51,10 +51,10 @@ const Room: React.FC<RoomProps> = ({
     if (field === "quantity") {
       updates.total = item.price * Number(value);
     } else if (field === "price") {
-      updates.margin = ((Number(value) - item.cost) / Number(value)) * 100;
+      updates.margin = ((Number(value) - item.cost) / item.cost) * 100;
       updates.total = Number(value) * item.quantity;
     } else if (field === "margin") {
-      const newPrice = item.cost / (1 - Number(value) / 100);
+      const newPrice = item.cost * (1 + Number(value) / 100);
       updates.price = newPrice;
       updates.total = newPrice * item.quantity;
     }
@@ -119,7 +119,7 @@ const Room: React.FC<RoomProps> = ({
                 <Group>
                   <TextInput
                     style={{ width: "150px" }}
-                    value={item.skuId}
+                    value={item.skuId || ""} // Ensure a default value
                     onChange={(e) =>
                       handleInputChange(item._id, "skuId", e.target.value)
                     }
@@ -138,7 +138,7 @@ const Room: React.FC<RoomProps> = ({
               </Table.Td>
               <Table.Td>
                 <Textarea
-                  value={item.name}
+                  value={item.name || ""} // Ensure a default value
                   onChange={(e) =>
                     handleInputChange(item._id, "name", e.target.value)
                   }
@@ -150,7 +150,7 @@ const Room: React.FC<RoomProps> = ({
               </Table.Td>
               <Table.Td>
                 <Textarea
-                  value={item.description}
+                  value={item.description || ""} // Ensure a default value
                   onChange={(e) =>
                     handleInputChange(item._id, "description", e.target.value)
                   }
@@ -164,7 +164,7 @@ const Room: React.FC<RoomProps> = ({
                 <NumberInput
                   value={item.quantity}
                   onChange={(value) =>
-                    handleInputChange(item._id, "quantity", value)
+                    handleInputChange(item._id, "quantity", value || 0)
                   }
                   disabled={!item.isEditing}
                   min={1}
@@ -178,7 +178,7 @@ const Room: React.FC<RoomProps> = ({
                   hideControls
                   value={item.price}
                   onChange={(value) =>
-                    handleInputChange(item._id, "price", value)
+                    handleInputChange(item._id, "price", value || 0)
                   }
                   disabled={!item.isEditing}
                   precision={2}
