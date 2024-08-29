@@ -19,16 +19,13 @@ import * as roomsService from "../services/rooms";
 import * as itemsService from "../services/items";
 import * as quotationsService from "../services/quotations";
 import { getIdFromName } from "../utils/getIdFromName";
+import useStaticData from "../hooks/useStaticData.ts";
 
 const QuotationBuilder: React.FC = () => {
   const theme = useMantineTheme();
   const { clientId } = useParams<{ clientId: string }>();
   const [client, setClient] = useState<Client | null>(null);
   const [scopes, setScopes] = useState<Scope[]>([]);
-  const [roomOptions, setRoomOptions] = useState<string[]>([]);
-  const [rooms, setRooms] = useState<string[]>([]);
-  const [scopeOfWorkOptions, setScopeOfWorkOptions] = useState<string[]>([]);
-  const [scopeOfWorks, setScopeOfWorks] = useState<string[]>([]);
   const [quotation, setQuotation] = useState<Quotation>({
     user_id: "mockUser", // You might want to set this from your auth context
     client_id: clientId || "", // From the route params
@@ -37,37 +34,15 @@ const QuotationBuilder: React.FC = () => {
     profit_margin: 0,
   });
   const [quotationItems, setQuotationItems] = useState<QuotationItem[]>([]);
+  const { scopeOfWorks, rooms, isLoading, error } = useStaticData();
+
+  const scopeOfWorkNames = scopeOfWorks.map((scopeOfWork) => scopeOfWork.name);
+
+  const roomNames = rooms.map((room) => room.name);
 
   const scopeCombobox = useCombobox({
     onDropdownClose: () => scopeCombobox.resetSelectedOption(),
   });
-
-  useEffect(() => {
-    const fetchScopeOfWorkOptions = async () => {
-      try {
-        const scopeOfWorks = await scopeOfWorksService.getScopeOfWorks();
-        const scopeOFWorkNames = scopeOfWorks.map((scope) => scope.name);
-        setScopeOfWorks(scopeOfWorks);
-        setScopeOfWorkOptions(scopeOFWorkNames);
-      } catch (error) {
-        console.error("Error fetching scope of work options", error);
-      }
-    };
-
-    const fetchRoomOptions = async () => {
-      try {
-        const rooms = await roomsService.getRooms();
-        const roomNames = rooms.map((room) => room.name);
-        setRoomOptions(roomNames);
-        setRooms(rooms);
-      } catch (error) {
-        console.error("Error fetching room options.", error);
-      }
-    };
-
-    fetchScopeOfWorkOptions();
-    fetchRoomOptions();
-  }, []);
 
   const handleAddScope = (selectedScope: string) => {
     const newScope: Scope = {
@@ -79,16 +54,16 @@ const QuotationBuilder: React.FC = () => {
     setScopes([...scopes, newScope]);
   };
 
-  const handleRemoveScope = (scopeId: string) => {
-    setScopes(scopes.filter((scope) => scope.id !== scopeId));
+  const handleRemoveScope = (scope_id: string) => {
+    setScopes(scopes.filter((scope) => scope.id !== scope_id));
     setQuotationItems(
-      quotationItems.filter((item) => item.scopeId !== scopeId)
+      quotationItems.filter((item) => item.scope_id !== scope_id)
     );
   };
 
-  const handleAddRoom = (scopeId: string, selectedRoom: string) => {
+  const handleAddRoom = (scope_id: string, selectedRoom: string) => {
     const updatedScopes = scopes.map((scope) => {
-      if (scope.id === scopeId) {
+      if (scope.id === scope_id) {
         const newRoom: Room = {
           id: getIdFromName(rooms, selectedRoom),
           name: selectedRoom,
@@ -102,12 +77,12 @@ const QuotationBuilder: React.FC = () => {
     setScopes(updatedScopes);
   };
 
-  const handleRemoveRoom = (scopeId: string, roomId: string) => {
+  const handleRemoveRoom = (scope_id: string, room_id: string) => {
     const updatedScopes = scopes.map((scope) => {
-      if (scope.id === scopeId) {
+      if (scope.id === scope_id) {
         return {
           ...scope,
-          rooms: scope.rooms.filter((room) => room.id !== roomId),
+          rooms: scope.rooms.filter((room) => room.id !== room_id),
         };
       }
       return scope;
@@ -115,16 +90,16 @@ const QuotationBuilder: React.FC = () => {
     setScopes(updatedScopes);
     setQuotationItems(
       quotationItems.filter(
-        (item) => item.scopeId !== scopeId || item.roomId !== roomId
+        (item) => item.scope_id !== scope_id || item.room_id !== room_id
       )
     );
   };
 
-  const handleAddItem = (scopeId: string, roomId: string) => {
+  const handleAddItem = (scope_id: string, room_id: string) => {
     const newItem: QuotationItem = {
       _id: `temp-${Date.now()}`, // Temporary ID
-      scopeId,
-      roomId,
+      scope_id,
+      room_id,
       skuId: "",
       name: "",
       description: "",
@@ -140,9 +115,9 @@ const QuotationBuilder: React.FC = () => {
     console.log(`add-item: `, quotationItems);
 
     const updatedScopes = scopes.map((scope) => {
-      if (scope.id === scopeId) {
+      if (scope.id === scope_id) {
         const updatedRooms = scope.rooms.map((room) => {
-          if (room.id === roomId) {
+          if (room.id === room_id) {
             return { ...room, items: [...room.items, newItem] };
           }
           return room;
@@ -177,15 +152,15 @@ const QuotationBuilder: React.FC = () => {
   };
 
   const handleUpdateItem = (
-    scopeId: string,
-    roomId: string,
+    scope_id: string,
+    room_id: string,
     itemId: string,
     updates: Partial<QuotationItem>
   ) => {
     setQuotationItems((prevItems) =>
       prevItems.map((item) =>
-        item.scopeId === scopeId &&
-        item.roomId === roomId &&
+        item.scope_id === scope_id &&
+        item.room_id === room_id &&
         item._id === itemId
           ? {
               ...item,
@@ -204,11 +179,11 @@ const QuotationBuilder: React.FC = () => {
 
     setScopes((prevScopes) =>
       prevScopes.map((scope) =>
-        scope.id === scopeId
+        scope.id === scope_id
           ? {
               ...scope,
               rooms: scope.rooms.map((room) =>
-                room.id === roomId
+                room.id === room_id
                   ? {
                       ...room,
                       items: room.items.map((item) =>
@@ -241,8 +216,8 @@ const QuotationBuilder: React.FC = () => {
   };
 
   const handleCommitItem = async (
-    scopeId: string,
-    roomId: string,
+    scope_id: string,
+    room_id: string,
     itemId: string
   ) => {
     try {
@@ -270,9 +245,9 @@ const QuotationBuilder: React.FC = () => {
       );
 
       const updatedScopes = scopes.map((scope) => {
-        if (scope.id === scopeId) {
+        if (scope.id === scope_id) {
           const updatedRooms = scope.rooms.map((room) => {
-            if (room.id === roomId) {
+            if (room.id === room_id) {
               const updatedItems = room.items.map((i) =>
                 i._id === itemId ? updatedItem : i
               );
@@ -293,8 +268,8 @@ const QuotationBuilder: React.FC = () => {
   };
 
   const handleDeleteItem = (
-    scopeId: string,
-    roomId: string,
+    scope_id: string,
+    room_id: string,
     itemId: string
   ) => {
     setQuotationItems((prevItems) =>
@@ -302,9 +277,9 @@ const QuotationBuilder: React.FC = () => {
     );
 
     const updatedScopes = scopes.map((scope) => {
-      if (scope.id === scopeId) {
+      if (scope.id === scope_id) {
         const updatedRooms = scope.rooms.map((room) => {
-          if (room.id === roomId) {
+          if (room.id === room_id) {
             const updatedItems = room.items.filter(
               (item) => item._id !== itemId
             );
@@ -389,7 +364,7 @@ const QuotationBuilder: React.FC = () => {
 
           <Combobox.Dropdown>
             <Combobox.Options>
-              {scopeOfWorkOptions.map((option) => (
+              {scopeOfWorkNames.map((option) => (
                 <Combobox.Option value={option} key={option}>
                   {option}
                 </Combobox.Option>
@@ -407,19 +382,19 @@ const QuotationBuilder: React.FC = () => {
               onAddRoom={(selectedRoom) =>
                 handleAddRoom(scope.id, selectedRoom)
               }
-              onRemoveRoom={(roomId) => handleRemoveRoom(scope.id, roomId)}
-              onAddItem={(roomId) => handleAddItem(scope.id, roomId)}
-              onUpdateItem={(roomId, itemId, updates) =>
-                handleUpdateItem(scope.id, roomId, itemId, updates)
+              onRemoveRoom={(room_id) => handleRemoveRoom(scope.id, room_id)}
+              onAddItem={(room_id) => handleAddItem(scope.id, room_id)}
+              onUpdateItem={(room_id, itemId, updates) =>
+                handleUpdateItem(scope.id, room_id, itemId, updates)
               }
-              onCommitItem={(roomId, itemId) =>
-                handleCommitItem(scope.id, roomId, itemId)
+              onCommitItem={(room_id, itemId) =>
+                handleCommitItem(scope.id, room_id, itemId)
               }
-              onDeleteItem={(roomId, itemId) =>
-                handleDeleteItem(scope.id, roomId, itemId)
+              onDeleteItem={(room_id, itemId) =>
+                handleDeleteItem(scope.id, room_id, itemId)
               }
               onRemoveScope={() => handleRemoveScope(scope.id)}
-              roomOptions={roomOptions}
+              roomNames={roomNames}
             />
           ))}
         </Stack>
