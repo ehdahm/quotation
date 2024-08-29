@@ -18,6 +18,7 @@ import * as scopeOfWorksService from "../services/scopeOfWorks";
 import * as roomsService from "../services/rooms";
 import * as itemsService from "../services/items";
 import * as quotationsService from "../services/quotations";
+import { getIdFromName } from "../utils/getIdFromName";
 
 const QuotationBuilder: React.FC = () => {
   const theme = useMantineTheme();
@@ -25,7 +26,9 @@ const QuotationBuilder: React.FC = () => {
   const [client, setClient] = useState<Client | null>(null);
   const [scopes, setScopes] = useState<Scope[]>([]);
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
+  const [rooms, setRooms] = useState<string[]>([]);
   const [scopeOfWorkOptions, setScopeOfWorkOptions] = useState<string[]>([]);
+  const [scopeOfWorks, setScopeOfWorks] = useState<string[]>([]);
   const [quotation, setQuotation] = useState<Quotation>({
     user_id: "mockUser", // You might want to set this from your auth context
     client_id: clientId || "", // From the route params
@@ -44,6 +47,7 @@ const QuotationBuilder: React.FC = () => {
       try {
         const scopeOfWorks = await scopeOfWorksService.getScopeOfWorks();
         const scopeOFWorkNames = scopeOfWorks.map((scope) => scope.name);
+        setScopeOfWorks(scopeOfWorks);
         setScopeOfWorkOptions(scopeOFWorkNames);
       } catch (error) {
         console.error("Error fetching scope of work options", error);
@@ -55,6 +59,7 @@ const QuotationBuilder: React.FC = () => {
         const rooms = await roomsService.getRooms();
         const roomNames = rooms.map((room) => room.name);
         setRoomOptions(roomNames);
+        setRooms(rooms);
       } catch (error) {
         console.error("Error fetching room options.", error);
       }
@@ -66,10 +71,11 @@ const QuotationBuilder: React.FC = () => {
 
   const handleAddScope = (selectedScope: string) => {
     const newScope: Scope = {
-      id: selectedScope,
+      id: getIdFromName(scopeOfWorks, selectedScope),
       title: selectedScope,
       rooms: [],
     };
+    console.log("newScope", newScope);
     setScopes([...scopes, newScope]);
   };
 
@@ -84,10 +90,11 @@ const QuotationBuilder: React.FC = () => {
     const updatedScopes = scopes.map((scope) => {
       if (scope.id === scopeId) {
         const newRoom: Room = {
-          id: selectedRoom,
+          id: getIdFromName(rooms, selectedRoom),
           name: selectedRoom,
           items: [],
         };
+        console.log("newRoom", newRoom);
         return { ...scope, rooms: [...scope.rooms, newRoom] };
       }
       return scope;
@@ -313,7 +320,7 @@ const QuotationBuilder: React.FC = () => {
     updateOverallQuotation();
   };
 
-  const onSaveQuotation = async () => {
+  const handleSaveQuotation = async () => {
     try {
       const cleanedQuotationItems = quotationItems.map((item) => {
         const { _id, isEditing, ...cleanedItem } = item;
@@ -324,6 +331,7 @@ const QuotationBuilder: React.FC = () => {
         quotation,
         quotationItems: cleanedQuotationItems,
       };
+      console.log("onSaveQuotationData", quotationData);
       const newQuotation = await quotationsService.saveQuotation(quotationData);
       console.log("Quotation saved successfully:", newQuotation);
       return newQuotation;
@@ -347,7 +355,7 @@ const QuotationBuilder: React.FC = () => {
         <Group>
           <ActionIcon
             variant="transparent"
-            onClick={onSaveQuotation}
+            onClick={handleSaveQuotation}
             title="Save Quotation"
           >
             <CheckIcon size={18} />

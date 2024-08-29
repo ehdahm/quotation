@@ -30,7 +30,7 @@ export interface Quotation {
 }
 
 export interface Scope {
-  id: string;
+  id: unknown;
   title: string;
   rooms: Room[];
 }

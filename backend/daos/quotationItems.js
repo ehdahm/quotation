@@ -6,6 +6,7 @@ const quotationItemSchema = new mongoose.Schema(
     quotation_id: mongoose.ObjectId,
     scope_id: mongoose.ObjectId,
     room_id: mongoose.ObjectId,
+    sku_id: { type: String, required: true },
     name: { type: String, required: true },
     description: { type: String },
     quantity: { type: Number, required: true },
