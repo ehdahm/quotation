@@ -39,7 +39,26 @@ async function getQuotation(req, res) {
   }
 }
 
+async function updateQuotation(req, res) {
+  try {
+    // destructure the required attributes
+    const { quotation_id } = req.params;
+    const { quotation, quotationItems } = req.body;
+
+    const updatedQuotation = await quotationService.updateQuotation(
+      quotation,
+      quotationItems,
+      quotation_id
+    );
+
+    res.status(201).json(updatedQuotation);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+}
+
 module.exports = {
   createQuotation,
   getQuotation,
+  updateQuotation,
 };

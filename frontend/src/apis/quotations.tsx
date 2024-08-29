@@ -6,3 +6,9 @@ export function saveQuotation(quotationData) {
 export function getQuotation(quotation_id) {
   return sendRequest(`/quotations/${quotation_id}`);
 }
+export function updateQuotation(quotation_id, quotationData) {
+  return sendRequest(`/quotations/${quotation_id}`, "PUT", quotationData);
+}
+export function deleteQuotation(quotation_id) {
+  return sendRequest();
+}

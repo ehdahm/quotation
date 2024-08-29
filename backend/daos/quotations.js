@@ -16,10 +16,22 @@ const Quotation = mongoose.model("Quotation", quotationSchema);
 function createQuotation(quotationData) {
   return Quotation.create(quotationData);
 }
+
 function getQuotation(quotationId) {
-  return Quotation.find({ _id: quotationId });
+  return Quotation.findById(quotationId);
 }
+
+function updateQuotation(quotationId, quotationData) {
+  return Quotation.findByIdAndUpdate(quotationId, quotationData, { new: true });
+}
+
+function deleteQuotation(quotationId) {
+  return Quotation.findByIdAndDelete(quotationId);
+}
+
 module.exports = {
   createQuotation,
   getQuotation,
+  updateQuotation,
+  deleteQuotation,
 };

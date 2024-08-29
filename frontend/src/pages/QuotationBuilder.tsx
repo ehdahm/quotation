@@ -329,21 +329,45 @@ const QuotationBuilder: React.FC = () => {
 
   const handleSaveQuotation = async () => {
     try {
-      const cleanedQuotationItems = quotationItems.map((item) => {
-        const { _id, ...cleanedItem } = item;
-        return cleanedItem;
+      const processedQuotationItems = quotationItems.map((item) => {
+        if (item._id && !item._id.startsWith("temp-")) {
+          // Existing item from database
+          return item;
+        } else {
+          // New item added in the frontend
+          const { _id, ...newItem } = item;
+          return newItem;
+        }
       });
 
       const quotationData = {
         quotation,
-        quotationItems: cleanedQuotationItems,
+        quotationItems: processedQuotationItems,
       };
-      console.log("onSaveQuotationData", quotationData);
-      const newQuotation = await quotationsService.saveQuotation(quotationData);
-      console.log("Quotation saved successfully:", newQuotation);
-      return newQuotation;
+
+      if (quotationId) {
+        console.log("Updating quotation", quotationId);
+        const updatedQuotation = await quotationsService.updateQuotation(
+          quotationId,
+          quotationData
+        );
+        console.log("Quotation updated successfully:", updatedQuotation);
+      } else {
+        console.log("Saving new quotation");
+        const newQuotation = await quotationsService.saveQuotation(
+          quotationData
+        );
+        console.log("Quotation saved successfully:", newQuotation);
+      }
+
+      // After successful save/update, refresh the quotation data
+      if (quotationId) {
+        const refreshedData = await quotationsService.getQuotation(quotationId);
+        // Update your state with the refreshed data
+        setRawQuotationData(refreshedData);
+      }
     } catch (error) {
-      console.error("Error saving quotation:", error);
+      console.error("Error saving/updating quotation:", error);
     }
   };
 
