@@ -11,46 +11,26 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Client } from "../types";
 import classes from "./BadgeCard.module.css";
+import SavedQuotationsComponent from "./SavedQuotationsComponent";
+import * as clientsService from "../services/clients";
 
 const ClientsPanel = () => {
   const [clients, setClients] = useState<Client[]>([]);
+  const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const navigate = useNavigate();
   const theme = useMantineTheme();
 
   useEffect(() => {
-    // Hardcoded fake data
-    const fakeClients: Client[] = [
-      {
-        _id: "1",
-        name: "John Doe",
-        phone: "+1 (555) 123-4567",
-        address: "123 Elm Street, Springfield, USA",
-        quotation_id: "66d09afd9d19599b24f0fb7d",
-      },
-      {
-        _id: "2",
-        name: "Jane Smith",
-        phone: "+1 (555) 987-6543",
-        address: "456 Oak Avenue, Metropolis, USA",
-        quotation_id: "75e1abce0e2a6aac35f1fc8e",
-      },
-      {
-        _id: "3",
-        name: "Alice Johnson",
-        phone: "+1 (555) 555-5555",
-        address: "789 Maple Lane, Gotham, USA",
-      },
-    ];
-
-    setClients(fakeClients);
+    const fetchClients = async () => {
+      const clients = await clientsService.getClients();
+      setClients(clients);
+    };
+    fetchClients();
+    console.log(clients);
   }, []);
 
   const handleGenerateQuotation = (clientId: string) => {
     navigate(`/quotation/${clientId}`);
-  };
-
-  const handleEditQuotation = (quotationId: string) => {
-    navigate(`/edit-quotation/${quotationId}`);
   };
 
   return (
@@ -86,16 +66,6 @@ const ClientsPanel = () => {
                   <Text size="sm">{client.address}</Text>
                 </Stack>
                 <Button
-                  onClick={() => handleEditQuotation(client.quotation_id)}
-                  style={{
-                    flexGrow: 0,
-                    backgroundColor: theme.colors.secondary[0],
-                    color: "black",
-                  }}
-                >
-                  Edit Quotation
-                </Button>
-                <Button
                   onClick={() => handleGenerateQuotation(client._id)}
                   style={{
                     flexGrow: 0,
@@ -106,6 +76,9 @@ const ClientsPanel = () => {
                   Create Quotation
                 </Button>
               </Group>
+              {selectedClient === client._id && (
+                <SavedQuotationsComponent clientId={client._id} />
+              )}
             </Card>
           ))}
         </div>
