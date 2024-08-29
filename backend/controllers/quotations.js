@@ -25,7 +25,7 @@ async function getQuotation(req, res) {
     const { quotationId } = req.params;
     const quotationData = await quotationService.getQuotation(quotationId);
 
-    if (!quotation) {
+    if (!quotationData) {
       return res.status(404).json({ message: "Quotation not found" });
     }
     console.log("quotation", quotationData);

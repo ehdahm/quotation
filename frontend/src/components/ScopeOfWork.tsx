@@ -25,17 +25,17 @@ interface ScopeOfWorkProps {
     }[];
   };
   onAddRoom: (selectedRoom: string) => void;
-  onRemoveRoom: (roomId: number) => void;
-  onAddItem: (roomId: number) => void;
+  onRemoveRoom: (room_id: number) => void;
+  onAddItem: (room_id: number) => void;
   onUpdateItem: (
-    roomId: number,
+    room_id: number,
     itemId: string,
     updates: Partial<QuotationItem>
   ) => void;
-  onCommitItem: (roomId: number, itemId: string) => void;
-  onCancelEdit: (roomId: number, itemId: string) => void;
+  onCommitItem: (room_id: number, itemId: string) => void;
+  onCancelEdit: (room_id: number, itemId: string) => void;
   onRemoveScope: () => void;
-  roomOptions: string[];
+  roomNames: string[];
 }
 
 const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
@@ -47,7 +47,7 @@ const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
   onCommitItem,
   onCancelEdit,
   onRemoveScope,
-  roomOptions,
+  roomNames,
 }) => {
   const theme = useMantineTheme();
 
@@ -114,7 +114,7 @@ const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
 
             <Combobox.Dropdown>
               <Combobox.Options>
-                {roomOptions.map((option) => (
+                {roomNames.map((option) => (
                   <Combobox.Option value={option} key={option}>
                     {option}
                   </Combobox.Option>
