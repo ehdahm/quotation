@@ -2,7 +2,7 @@ import * as quotationsApi from "../apis/quotations";
 
 export async function saveQuotation(quotationData) {
   try {
-    console.log("quotationData", quotationData);
+    console.log("quotationDataToSave", quotationData);
     const newQuotation = await quotationsApi.saveQuotation(quotationData);
     console.log("newQuotation", newQuotation);
     return newQuotation;
@@ -24,7 +24,7 @@ export async function getQuotation(quotation_id) {
 
 export async function updateQuotation(quotation_id, quotationData) {
   try {
-    console.log("quotationData", quotationData);
+    console.log("quotationDataToUpdate", quotationData);
     const updatedQuotation = await quotationsApi.updateQuotation(
       quotation_id,
       quotationData
@@ -45,5 +45,18 @@ export async function deleteQuotation(quotation_id) {
     return deletedQuotationData;
   } catch (error) {
     console.error("Error deleting quotation");
+  }
+}
+
+export async function getQuotationsByClientId(client_id) {
+  try {
+    console.log("client_id", client_id);
+    const quotationData = await quotationsApi.getQuotationsByClientId(
+      client_id
+    );
+    return quotationData;
+  } catch (error) {
+    console.error("Error fetching quotations by client ID:", error);
+    throw error;
   }
 }

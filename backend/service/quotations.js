@@ -6,13 +6,14 @@ async function createQuotation(quotation, quotationItems) {
   try {
     // create the quotation object
     // quotation should be an object
+    quotation.client_id = new mongoose.Types.ObjectId(quotation.client_id);
     const daoQuotation = await quotationDAO.createQuotation(quotation);
     console.log("daoQuotation", daoQuotation);
+    console.log("quotationItems", quotationItems);
 
     // quotationItems is an array of objects
     const newQuotationItems = quotationItems.map((item) => ({
       ...item,
-      sku_id: item.skuId,
       scope_id: new mongoose.Types.ObjectId(item.scopeId),
       room_id: new mongoose.Types.ObjectId(item.roomId),
       quotation_id: daoQuotation._id,
@@ -124,6 +125,16 @@ async function updateQuotation(quotation, quotationItems, quotation_id) {
   }
 }
 
+async function getQuotationsByClientId(clientId) {
+  try {
+    const quotations = await quotationDAO.findByClientId(clientId);
+    return quotations;
+  } catch (error) {
+    console.error("Error in QuotationService.getQuotationsByClientId:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   createQuotation,
   getQuotation,
@@ -134,4 +145,5 @@ module.exports = {
   createQuotation,
   getQuotation,
   updateQuotation,
+  getQuotationsByClientId,
 };

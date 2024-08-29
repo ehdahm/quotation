@@ -29,9 +29,15 @@ function deleteQuotation(quotationId) {
   return Quotation.findByIdAndDelete(quotationId);
 }
 
+function findByClientId(clientId) {
+  const objectId = new mongoose.Types.ObjectId(clientId);
+  return Quotation.find({ client_id: objectId });
+}
+
 module.exports = {
   createQuotation,
   getQuotation,
   updateQuotation,
   deleteQuotation,
+  findByClientId,
 };

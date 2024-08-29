@@ -57,8 +57,21 @@ async function updateQuotation(req, res) {
   }
 }
 
+async function getQuotations(req, res) {
+  try {
+    const { clientId } = req.query;
+    console.log("reqqueryClientId", clientId);
+    const quotations = await quotationService.getQuotationsByClientId(clientId);
+    res.json(quotations);
+  } catch (error) {
+    console.error("Error in getQuotationsByClientId controller:", error);
+    res.status(500).json({ message: "Cannot Work" });
+  }
+}
+
 module.exports = {
   createQuotation,
   getQuotation,
   updateQuotation,
+  getQuotations,
 };
