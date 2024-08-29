@@ -119,11 +119,10 @@ const Room: React.FC<RoomProps> = ({
                 <Group>
                   <TextInput
                     style={{ width: "150px" }}
-                    value={item.skuId || ""} // Ensure a default value
+                    value={item.sku_id || ""} // Ensure a default value
                     onChange={(e) =>
-                      handleInputChange(item._id, "skuId", e.target.value)
+                      handleInputChange(item._id, "sku_id", e.target.value)
                     }
-                    disabled={!item.isEditing}
                     rightSection={
                       <ActionIcon
                         variant="transparent"
@@ -142,7 +141,6 @@ const Room: React.FC<RoomProps> = ({
                   onChange={(e) =>
                     handleInputChange(item._id, "name", e.target.value)
                   }
-                  disabled={!item.isEditing}
                   autosize
                   minRows={1}
                   maxRows={5}
@@ -154,7 +152,6 @@ const Room: React.FC<RoomProps> = ({
                   onChange={(e) =>
                     handleInputChange(item._id, "description", e.target.value)
                   }
-                  disabled={!item.isEditing}
                   autosize
                   minRows={1}
                   maxRows={5}
@@ -166,7 +163,6 @@ const Room: React.FC<RoomProps> = ({
                   onChange={(value) =>
                     handleInputChange(item._id, "quantity", value || 0)
                   }
-                  disabled={!item.isEditing}
                   min={1}
                   style={{ width: "70px" }}
                 />
@@ -180,7 +176,6 @@ const Room: React.FC<RoomProps> = ({
                   onChange={(value) =>
                     handleInputChange(item._id, "price", value || 0)
                   }
-                  disabled={!item.isEditing}
                   precision={2}
                   style={{ width: "90px" }}
                 />
