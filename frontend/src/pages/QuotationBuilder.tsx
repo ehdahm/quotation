@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Text,
@@ -16,12 +16,13 @@ import { Client, QuotationItem, Quotation, Scope } from "../types";
 import ScopeOfWork from "../components/ScopeOfWork";
 import * as itemsService from "../services/items";
 import * as quotationsService from "../services/quotations";
-import { getIdFromName } from "../utils/getIdFromName";
+import { getIdFromName } from "../utils/dataMappingFunctions.ts";
 import useStaticData from "../hooks/useStaticData.ts";
+import { transformQuotationData } from "../utils/transformQuotationData.ts";
 
 const QuotationBuilder: React.FC = () => {
   const theme = useMantineTheme();
-  const { clientId } = useParams<{ clientId: string }>();
+  const { clientId, quotationId } = useParams();
   const [client, setClient] = useState<Client | null>(null);
   const [scopes, setScopes] = useState<Scope[]>([]);
   const [quotation, setQuotation] = useState<Quotation>({
@@ -33,6 +34,41 @@ const QuotationBuilder: React.FC = () => {
   });
   const [quotationItems, setQuotationItems] = useState<QuotationItem[]>([]);
   const { scopeOfWorks, rooms, isLoading, error } = useStaticData();
+  const [rawQuotationData, setRawQuotationData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchQuotation = async () => {
+      if (quotationId) {
+        try {
+          const rawData = await quotationsService.getQuotation(quotationId);
+          setRawQuotationData(rawData);
+        } catch (error) {
+          console.error("Error fetching quotation:", error);
+        }
+      }
+    };
+
+    fetchQuotation();
+  }, [quotationId]);
+
+  useEffect(() => {
+    if (rawQuotationData && scopeOfWorks.length > 0 && rooms.length > 0) {
+      const { quotation: fetchedQuotation, scopes: fetchedScopes } =
+        transformQuotationData(rawQuotationData, scopeOfWorks, rooms);
+
+      setQuotation(fetchedQuotation);
+      setScopes(fetchedScopes);
+
+      const allItems: QuotationItem[] = fetchedScopes.flatMap((scope) =>
+        scope.rooms.flatMap((room) => room.items)
+      );
+      setQuotationItems(allItems);
+
+      console.log("Transformed quotation:", fetchedQuotation);
+      console.log("Transformed scopes:", fetchedScopes);
+      console.log("All items:", allItems);
+    }
+  }, [rawQuotationData, scopeOfWorks, rooms]);
 
   const scopeOfWorkNames = scopeOfWorks.map((scopeOfWork) => scopeOfWork.name);
 
@@ -107,7 +143,6 @@ const QuotationBuilder: React.FC = () => {
       price: 0,
       margin: 0,
       total: 0,
-      isEditing: true,
     };
     setQuotationItems([...quotationItems, newItem]);
     console.log(`add-item: `, quotationItems);
@@ -225,7 +260,7 @@ const QuotationBuilder: React.FC = () => {
         return;
       }
 
-      const fetchedItem = await itemsService.getItemBySkuId(item.skuId);
+      const fetchedItem = await itemsService.getItemBySkuId(item.sku_id);
       const updatedItem: QuotationItem = {
         ...item,
         name: fetchedItem.name,
@@ -235,7 +270,6 @@ const QuotationBuilder: React.FC = () => {
         price: fetchedItem.price,
         margin: fetchedItem.margin,
         total: fetchedItem.price * item.quantity,
-        isEditing: true,
       };
 
       setQuotationItems((prevItems) =>
@@ -296,7 +330,7 @@ const QuotationBuilder: React.FC = () => {
   const handleSaveQuotation = async () => {
     try {
       const cleanedQuotationItems = quotationItems.map((item) => {
-        const { _id, isEditing, ...cleanedItem } = item;
+        const { _id, ...cleanedItem } = item;
         return cleanedItem;
       });
 

@@ -25,12 +25,14 @@ const ClientsPanel = () => {
         name: "John Doe",
         phone: "+1 (555) 123-4567",
         address: "123 Elm Street, Springfield, USA",
+        quotation_id: "66d09afd9d19599b24f0fb7d",
       },
       {
         _id: "2",
         name: "Jane Smith",
         phone: "+1 (555) 987-6543",
         address: "456 Oak Avenue, Metropolis, USA",
+        quotation_id: "75e1abce0e2a6aac35f1fc8e",
       },
       {
         _id: "3",
@@ -45,6 +47,10 @@ const ClientsPanel = () => {
 
   const handleGenerateQuotation = (clientId: string) => {
     navigate(`/quotation/${clientId}`);
+  };
+
+  const handleEditQuotation = (quotationId: string) => {
+    navigate(`/edit-quotation/${quotationId}`);
   };
 
   return (
@@ -79,6 +85,16 @@ const ClientsPanel = () => {
                   <Text size="sm">{client.phone}</Text>
                   <Text size="sm">{client.address}</Text>
                 </Stack>
+                <Button
+                  onClick={() => handleEditQuotation(client.quotation_id)}
+                  style={{
+                    flexGrow: 0,
+                    backgroundColor: theme.colors.secondary[0],
+                    color: "black",
+                  }}
+                >
+                  Edit Quotation
+                </Button>
                 <Button
                   onClick={() => handleGenerateQuotation(client._id)}
                   style={{
