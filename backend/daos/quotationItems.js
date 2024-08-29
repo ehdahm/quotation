@@ -21,14 +21,30 @@ const quotationItemSchema = new mongoose.Schema(
 
 const QuotationItem = mongoose.model("QuotationItem", quotationItemSchema);
 
-// i can add an arr of obj
 function insertManyQuotationItems(quotationItems) {
   return QuotationItem.insertMany(quotationItems);
 }
-async function getQuotationItemsById(quotation_id) {
+
+async function getQuotationItemsByQuotationId(quotation_id) {
   return QuotationItem.find({ quotation_id });
 }
+
+function updateQuotationItems(itemId, itemData) {
+  return QuotationItem.findByIdAndUpdate(itemId, itemData, { new: true });
+}
+
+function createQuotationItems(quotationItems) {
+  return QuotationItem.create(quotationItems);
+}
+
+function deleteMany(filterQuery) {
+  return QuotationItem.deleteMany(filterQuery);
+}
+
 module.exports = {
   insertManyQuotationItems,
-  getQuotationItemsById,
+  getQuotationItemsByQuotationId,
+  updateQuotationItems,
+  createQuotationItems,
+  deleteMany,
 };
