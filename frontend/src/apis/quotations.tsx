@@ -12,3 +12,6 @@ export function updateQuotation(quotation_id, quotationData) {
 export function deleteQuotation(quotation_id) {
   return sendRequest();
 }
+export function getQuotationsByClientId(client_id) {
+  return sendRequest(`/quotations?clientId=${client_id}`);
+}

@@ -7,6 +7,7 @@ import {
   Group,
   Tabs,
   useMantineTheme,
+  Box,
 } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { Client } from "../types";
@@ -26,8 +27,15 @@ const ClientsPanel = () => {
       setClients(clients);
     };
     fetchClients();
-    console.log(clients);
   }, []);
+
+  useEffect(() => {
+    if (clients.length > 0) {
+      console.log(clients);
+    }
+  }, [clients]);
+
+  console.log(selectedClient);
 
   const handleGenerateQuotation = (clientId: string) => {
     navigate(`/quotation/${clientId}`);
@@ -76,9 +84,10 @@ const ClientsPanel = () => {
                   Create Quotation
                 </Button>
               </Group>
-              {selectedClient === client._id && (
-                <SavedQuotationsComponent clientId={client._id} />
-              )}
+              <Box style={{ flexGrow: 1, maxWidth: "60%" }}>
+                {" "}
+                <SavedQuotationsComponent clientId={client._id} />{" "}
+              </Box>
             </Card>
           ))}
         </div>

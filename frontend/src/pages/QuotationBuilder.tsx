@@ -40,7 +40,9 @@ const QuotationBuilder: React.FC = () => {
     const fetchQuotation = async () => {
       if (quotationId) {
         try {
+          console.log("Fetching quotation with ID:", quotationId);
           const rawData = await quotationsService.getQuotation(quotationId);
+          console.log("Raw quotation data received:", rawData);
           setRawQuotationData(rawData);
         } catch (error) {
           console.error("Error fetching quotation:", error);
@@ -340,6 +342,8 @@ const QuotationBuilder: React.FC = () => {
         }
       });
 
+      console.log("processedQuotationItems", processedQuotationItems);
+
       const quotationData = {
         quotation,
         quotationItems: processedQuotationItems,
@@ -353,7 +357,7 @@ const QuotationBuilder: React.FC = () => {
         );
         console.log("Quotation updated successfully:", updatedQuotation);
       } else {
-        console.log("Saving new quotation");
+        console.log("Saving new quotation with", quotationData);
         const newQuotation = await quotationsService.saveQuotation(
           quotationData
         );
@@ -430,30 +434,34 @@ const QuotationBuilder: React.FC = () => {
         </Combobox>
       </Group>
       <Box>
-        <Stack spacing="md">
-          {scopes.map((scope) => (
-            <ScopeOfWork
-              key={scope.id}
-              scope={scope}
-              onAddRoom={(selectedRoom) =>
-                handleAddRoom(scope.id, selectedRoom)
-              }
-              onRemoveRoom={(room_id) => handleRemoveRoom(scope.id, room_id)}
-              onAddItem={(room_id) => handleAddItem(scope.id, room_id)}
-              onUpdateItem={(room_id, itemId, updates) =>
-                handleUpdateItem(scope.id, room_id, itemId, updates)
-              }
-              onCommitItem={(room_id, itemId) =>
-                handleCommitItem(scope.id, room_id, itemId)
-              }
-              onDeleteItem={(room_id, itemId) =>
-                handleDeleteItem(scope.id, room_id, itemId)
-              }
-              onRemoveScope={() => handleRemoveScope(scope.id)}
-              roomNames={roomNames}
-            />
-          ))}
-        </Stack>
+        {scopes.length === 0 ? (
+          <h1>Please add a scope</h1>
+        ) : (
+          <Stack spacing="md">
+            {scopes.map((scope) => (
+              <ScopeOfWork
+                key={scope.id}
+                scope={scope}
+                onAddRoom={(selectedRoom) =>
+                  handleAddRoom(scope.id, selectedRoom)
+                }
+                onRemoveRoom={(room_id) => handleRemoveRoom(scope.id, room_id)}
+                onAddItem={(room_id) => handleAddItem(scope.id, room_id)}
+                onUpdateItem={(room_id, itemId, updates) =>
+                  handleUpdateItem(scope.id, room_id, itemId, updates)
+                }
+                onCommitItem={(room_id, itemId) =>
+                  handleCommitItem(scope.id, room_id, itemId)
+                }
+                onDeleteItem={(room_id, itemId) =>
+                  handleDeleteItem(scope.id, room_id, itemId)
+                }
+                onRemoveScope={() => handleRemoveScope(scope.id)}
+                roomNames={roomNames}
+              />
+            ))}
+          </Stack>
+        )}
       </Box>
     </Box>
   );
