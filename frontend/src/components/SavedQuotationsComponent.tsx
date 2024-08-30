@@ -41,7 +41,7 @@ const SavedQuotationsComponent: React.FC<SavedQuotationsComponentProps> = ({
   }, [clientId]);
 
   const handleEditQuotation = (quotationId: string) => {
-    navigate(`/edit-quotation/${quotationId}`);
+    navigate(`/quotation/edit/${quotationId}`);
   };
 
   if (isLoading) {

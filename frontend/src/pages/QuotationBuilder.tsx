@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import {
   Text,
   Button,
@@ -11,6 +11,8 @@ import {
   useCombobox,
   ActionIcon,
   CheckIcon,
+  Flex,
+  Center,
 } from "@mantine/core";
 import { Client, QuotationItem, Quotation, Scope } from "../types";
 import ScopeOfWork from "../components/ScopeOfWork";
@@ -24,17 +26,46 @@ import ProjectSummary from "../components/ProjectSummary.tsx";
 const QuotationBuilder: React.FC = () => {
   const theme = useMantineTheme();
   const { clientId, quotationId } = useParams();
+  const location = useLocation();
+  const isNewQuotation = location.pathname.includes("/new");
+
   const [scopes, setScopes] = useState<Scope[]>([]);
-  const [quotation, setQuotation] = useState<Quotation>({
-    user_id: "mockUser", // You might want to set this from your auth context
-    client_id: clientId || "", // From the route params
-    total_cost: 0,
-    total_amount: 0,
-    profit_margin: 0,
-  });
+  const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [quotationItems, setQuotationItems] = useState<QuotationItem[]>([]);
   const { scopeOfWorks, rooms, isLoading, error } = useStaticData();
   const [rawQuotationData, setRawQuotationData] = useState<any>(null);
+
+  const resetQuotationState = useCallback(() => {
+    setRawQuotationData(null);
+    setQuotation({
+      user_id: "mockUser", // or get from auth context
+      client_id: clientId || "",
+      total_cost: 0,
+      total_amount: 0,
+      profit_margin: 0,
+    });
+    setScopes([]);
+    setQuotationItems([]);
+  }, [clientId]);
+
+  useEffect(() => {
+    if (isNewQuotation && clientId) {
+      console.log("creating a nbew quotaion for client:", clientId);
+      resetQuotationState();
+    } else if (quotationId) {
+      console.log("editing quotation of id:", quotationId);
+      const fetchQuotation = async () => {
+        try {
+          console.log("Fetching quotation with ID:", quotationId);
+          const rawData = await quotationsService.getQuotation(quotationId);
+          setRawQuotationData(rawData);
+        } catch (error) {
+          console.error("Error fetching quotation:", error);
+        }
+      };
+      fetchQuotation();
+    }
+  }, [quotationId, isNewQuotation, resetQuotationState]);
 
   // =================== FETCHING DATA=================================
 
@@ -57,13 +88,9 @@ const QuotationBuilder: React.FC = () => {
 
   useEffect(() => {
     if (rawQuotationData && scopeOfWorks.length > 0 && rooms.length > 0) {
-      console.log("Transforming quotation data");
       try {
         const { quotation: fetchedQuotation, scopes: fetchedScopes } =
           transformQuotationData(rawQuotationData, scopeOfWorks, rooms);
-
-        console.log("Transformed quotation:", fetchedQuotation);
-        console.log("Transformed scopes:", fetchedScopes);
 
         setQuotation(fetchedQuotation);
         setScopes(fetchedScopes);
@@ -72,8 +99,6 @@ const QuotationBuilder: React.FC = () => {
           scope.rooms.flatMap((room) => room.items)
         );
         setQuotationItems(allItems);
-
-        console.log("All items:", allItems);
       } catch (error) {
         console.error("Error transforming quotation data:", error);
       }
@@ -465,7 +490,7 @@ const QuotationBuilder: React.FC = () => {
       </Group>
       <Box style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
         {scopes.length === 0 ? (
-          <h1>Please add a scope</h1>
+          <Center>Please add a scope</Center>
         ) : (
           <Stack spacing="md" style={{ flexGrow: 1 }}>
             {scopes.map((scope) => (
