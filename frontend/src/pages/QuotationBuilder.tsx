@@ -19,11 +19,11 @@ import * as quotationsService from "../services/quotations";
 import { getIdFromName } from "../utils/dataMappingFunctions.ts";
 import useStaticData from "../hooks/useStaticData.ts";
 import { transformQuotationData } from "../utils/transformQuotationData.ts";
+import ProjectSummary from "../components/ProjectSummary.tsx";
 
 const QuotationBuilder: React.FC = () => {
   const theme = useMantineTheme();
   const { clientId, quotationId } = useParams();
-  const [client, setClient] = useState<Client | null>(null);
   const [scopes, setScopes] = useState<Scope[]>([]);
   const [quotation, setQuotation] = useState<Quotation>({
     user_id: "mockUser", // You might want to set this from your auth context
@@ -35,6 +35,8 @@ const QuotationBuilder: React.FC = () => {
   const [quotationItems, setQuotationItems] = useState<QuotationItem[]>([]);
   const { scopeOfWorks, rooms, isLoading, error } = useStaticData();
   const [rawQuotationData, setRawQuotationData] = useState<any>(null);
+
+  // =================== FETCHING DATA=================================
 
   const fetchQuotation = useCallback(async () => {
     if (quotationId) {
@@ -78,6 +80,8 @@ const QuotationBuilder: React.FC = () => {
     }
   }, [rawQuotationData, scopeOfWorks, rooms]);
 
+  // =================== END OF FETCHING DATA=================================
+
   const scopeOfWorkNames = scopeOfWorks.map((scopeOfWork) => scopeOfWork.name);
 
   const roomNames = rooms.map((room) => room.name);
@@ -85,6 +89,22 @@ const QuotationBuilder: React.FC = () => {
   const scopeCombobox = useCombobox({
     onDropdownClose: () => scopeCombobox.resetSelectedOption(),
   });
+
+  const calculateTotalProjectCost = useCallback(() => {
+    return scopes.reduce((total, scope) => {
+      return (
+        total +
+        scope.rooms.reduce((scopeTotal, room) => {
+          return (
+            scopeTotal +
+            room.items.reduce((roomTotal, item) => roomTotal + item.total, 0)
+          );
+        }, 0)
+      );
+    }, 0);
+  }, [scopes]);
+
+  // ============= ADDING QUOTATION FIELDS =====================
 
   const handleAddScope = (selectedScope: string) => {
     const newScope: Scope = {
@@ -170,6 +190,8 @@ const QuotationBuilder: React.FC = () => {
     setScopes(updatedScopes);
     updateOverallQuotation();
   };
+
+  // ============= ADDING QUOTATION FIELDS =====================
 
   const updateOverallQuotation = () => {
     const total_cost = quotationItems.reduce(
@@ -383,13 +405,15 @@ const QuotationBuilder: React.FC = () => {
 
   return (
     <Box
-      p={"md"}
+      p="md"
       style={{
         backgroundColor: theme.colors.primary[0],
-        height: "95%",
+        minHeight: "95vh",
         width: "95%",
         borderRadius: "15px",
         border: "1px solid rgba(158, 147, 110, 0.22)",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <Group justify="space-between" style={{ padding: "20px" }}>
@@ -439,11 +463,11 @@ const QuotationBuilder: React.FC = () => {
           </Combobox.Dropdown>
         </Combobox>
       </Group>
-      <Box>
+      <Box style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
         {scopes.length === 0 ? (
           <h1>Please add a scope</h1>
         ) : (
-          <Stack spacing="md">
+          <Stack spacing="md" style={{ flexGrow: 1 }}>
             {scopes.map((scope) => (
               <ScopeOfWork
                 key={scope.id}
@@ -469,6 +493,10 @@ const QuotationBuilder: React.FC = () => {
           </Stack>
         )}
       </Box>
+      <ProjectSummary
+        scopes={scopes}
+        totalProjectCost={calculateTotalProjectCost()}
+      />
     </Box>
   );
 };
