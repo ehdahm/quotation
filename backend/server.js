@@ -4,6 +4,7 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const cors = require("cors");
+const security = require("./middlewares/security");
 require("dotenv").config();
 require("./client/mongo");
 
@@ -30,6 +31,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 
 // routes
+app.use(security.checkJWT);
 app.use("/", indexRouter);
 app.use("/api/auth", authRoutes);
 app.use("/api/clients", clientsRoutes);
