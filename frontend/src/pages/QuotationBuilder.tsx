@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Text,
@@ -36,39 +36,45 @@ const QuotationBuilder: React.FC = () => {
   const { scopeOfWorks, rooms, isLoading, error } = useStaticData();
   const [rawQuotationData, setRawQuotationData] = useState<any>(null);
 
-  useEffect(() => {
-    const fetchQuotation = async () => {
-      if (quotationId) {
-        try {
-          console.log("Fetching quotation with ID:", quotationId);
-          const rawData = await quotationsService.getQuotation(quotationId);
-          console.log("Raw quotation data received:", rawData);
-          setRawQuotationData(rawData);
-        } catch (error) {
-          console.error("Error fetching quotation:", error);
-        }
+  const fetchQuotation = useCallback(async () => {
+    if (quotationId) {
+      try {
+        console.log("Fetching quotation with ID:", quotationId);
+        const rawData = await quotationsService.getQuotation(quotationId);
+        console.log("Raw quotation data received:", rawData);
+        setRawQuotationData(rawData);
+      } catch (error) {
+        console.error("Error fetching quotation:", error);
       }
-    };
-
-    fetchQuotation();
+    }
   }, [quotationId]);
 
   useEffect(() => {
+    fetchQuotation();
+  }, [fetchQuotation]);
+
+  useEffect(() => {
     if (rawQuotationData && scopeOfWorks.length > 0 && rooms.length > 0) {
-      const { quotation: fetchedQuotation, scopes: fetchedScopes } =
-        transformQuotationData(rawQuotationData, scopeOfWorks, rooms);
+      console.log("Transforming quotation data");
+      try {
+        const { quotation: fetchedQuotation, scopes: fetchedScopes } =
+          transformQuotationData(rawQuotationData, scopeOfWorks, rooms);
 
-      setQuotation(fetchedQuotation);
-      setScopes(fetchedScopes);
+        console.log("Transformed quotation:", fetchedQuotation);
+        console.log("Transformed scopes:", fetchedScopes);
 
-      const allItems: QuotationItem[] = fetchedScopes.flatMap((scope) =>
-        scope.rooms.flatMap((room) => room.items)
-      );
-      setQuotationItems(allItems);
+        setQuotation(fetchedQuotation);
+        setScopes(fetchedScopes);
 
-      console.log("Transformed quotation:", fetchedQuotation);
-      console.log("Transformed scopes:", fetchedScopes);
-      console.log("All items:", allItems);
+        const allItems: QuotationItem[] = fetchedScopes.flatMap((scope) =>
+          scope.rooms.flatMap((room) => room.items)
+        );
+        setQuotationItems(allItems);
+
+        console.log("All items:", allItems);
+      } catch (error) {
+        console.error("Error transforming quotation data:", error);
+      }
     }
   }, [rawQuotationData, scopeOfWorks, rooms]);
 

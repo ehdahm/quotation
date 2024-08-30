@@ -14,8 +14,8 @@ async function createQuotation(quotation, quotationItems) {
     // quotationItems is an array of objects
     const newQuotationItems = quotationItems.map((item) => ({
       ...item,
-      scope_id: new mongoose.Types.ObjectId(item.scopeId),
-      room_id: new mongoose.Types.ObjectId(item.roomId),
+      scope_id: new mongoose.Types.ObjectId(item.scope_id),
+      room_id: new mongoose.Types.ObjectId(item.room_id),
       quotation_id: daoQuotation._id,
     }));
     console.log("newQuotationItems", newQuotationItems);
