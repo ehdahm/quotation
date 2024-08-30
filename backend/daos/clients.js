@@ -8,8 +8,9 @@ const clientSchema = new mongoose.Schema({
 
 const Client = mongoose.model("Client", clientSchema);
 
-function getClients() {
-  return Client.find({});
+function getClients(user_id) {
+  const objectId = new mongoose.Types.ObjectId(user_id);
+  return Client.find({ user_id: objectId });
 }
 
 module.exports = {

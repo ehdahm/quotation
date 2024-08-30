@@ -33,7 +33,9 @@ function verifyJWT(token) {
 }
 
 async function checkJWT(req, res, next) {
+  console.log(`checking JWT`);
   let token = req.get("Authorization") || req.query.token;
+  console.log(`retrieved token: ${token}`);
   if (token) {
     token = token.replace("Bearer ", "");
     const tokenUser = await userDAO.findOne({ token });
@@ -43,6 +45,7 @@ async function checkJWT(req, res, next) {
     }
     const decodedUser = verifyJWT(token);
     req.user = decodedUser ? decodedUser.payload : null;
+    console.log("req.user", req.user);
   } else {
     req.user = null;
   }

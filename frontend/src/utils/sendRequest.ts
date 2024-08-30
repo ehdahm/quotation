@@ -1,3 +1,5 @@
+import { getToken } from "./security";
+
 const API_BASE_URL = "http://localhost:3000/api";
 
 export default async function sendRequest(
@@ -5,13 +7,22 @@ export default async function sendRequest(
   method: string = "GET",
   payload: any = null
 ) {
+  const token = getToken();
+
   const url = `${API_BASE_URL}${endpoint}`;
-  const options = {
+  const options: RequestInit = {
     method,
     headers: {
       "Content-Type": "application/json",
     },
   };
+
+  if (token) {
+    options.headers = {
+      ...options.headers,
+      Authorization: `Bearer ${token}`,
+    };
+  }
 
   if (payload) {
     options.body = JSON.stringify(payload);

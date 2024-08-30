@@ -2,6 +2,7 @@ const quotationService = require("../service/quotations");
 
 async function createQuotation(req, res) {
   try {
+    const { user_id } = req.user;
     // destructure the required attributes
     const { quotation, quotationItems } = req.body;
 
@@ -11,7 +12,8 @@ async function createQuotation(req, res) {
 
     const createdQuotation = await quotationService.createQuotation(
       quotation,
-      quotationItems
+      quotationItems,
+      user_id
     );
 
     res.status(201).json(createdQuotation);
@@ -41,6 +43,8 @@ async function getQuotation(req, res) {
 
 async function updateQuotation(req, res) {
   try {
+    const { user_id } = req.user;
+    console.log(`user_id in quotationUpdate ${user_id}`);
     // destructure the required attributes
     const { quotation_id } = req.params;
     const { quotation, quotationItems } = req.body;

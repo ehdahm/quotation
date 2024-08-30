@@ -2,12 +2,12 @@ const mongoose = require("mongoose");
 const quotationDAO = require("../daos/quotations");
 const quotationItemsDAO = require("../daos/quotationItems");
 
-async function createQuotation(quotation, quotationItems) {
+async function createQuotation(quotation, quotationItems, user_id) {
   try {
     // create the quotation object
     // quotation should be an object
     quotation.client_id = new mongoose.Types.ObjectId(quotation.client_id);
-    const daoQuotation = await quotationDAO.createQuotation(quotation);
+    const daoQuotation = await quotationDAO.createQuotation(quotation, user_id);
     console.log("daoQuotation", daoQuotation);
     console.log("quotationItems", quotationItems);
 

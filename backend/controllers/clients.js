@@ -2,7 +2,10 @@ const clientDao = require("../daos/clients");
 
 async function getClients(req, res) {
   try {
-    const clients = await clientDao.getClients();
+    // destructure userid from the request set by middleware
+    const { user_id } = req.user;
+    console.log("clientsService user_id", user_id);
+    const clients = await clientDao.getClients(user_id);
     if (!clients) {
       return res.status(404).json({ message: "No clients found" });
     }
