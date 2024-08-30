@@ -10,7 +10,8 @@ export function updateQuotation(quotation_id, quotationData) {
   return sendRequest(`/quotations/${quotation_id}`, "PUT", quotationData);
 }
 export function deleteQuotation(quotation_id) {
-  return sendRequest();
+  console.log(`quotationid in api frontend: ${quotation_id}`);
+  return sendRequest(`/quotations/${quotation_id}`, "DELETE");
 }
 export function getQuotationsByClientId(client_id) {
   return sendRequest(`/quotations?clientId=${client_id}`);
