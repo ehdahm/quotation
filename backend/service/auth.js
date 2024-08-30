@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const userDao = require("../daos/users");
 const securityUtil = require("../utils/security");
 
@@ -20,8 +21,15 @@ async function login(credentials) {
 }
 
 async function register(userData) {
+  console.log(`userData in register: ${userData}`);
   const createdUser = await userDao.create(userData);
-  return createdUser;
+
+  const token = await createSession(createdUser);
+  console.log(`received token for user: ${token}`);
+
+  const wholeUserData = { ...createdUser, token };
+  console.log(`returning userData in service: ${wholeUserData}`);
+  return wholeUserData;
 }
 
 async function fetchSaltAndIterations(email) {
@@ -65,8 +73,16 @@ async function createSession(user) {
   return token;
 }
 
+async function removeToken(user_id) {
+  console.log(`userid received in service: ${user_id}`);
+  const userObjectId = new mongoose.Types.ObjectId(user_id);
+  const user = await userDao.removeToken(userObjectId);
+  return user;
+}
+
 module.exports = {
   login,
   register,
   fetchSaltAndIterations,
+  removeToken,
 };

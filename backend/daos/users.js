@@ -80,8 +80,34 @@ async function findOne(filter) {
   }
 }
 
+async function create(userData) {
+  try {
+    const result = await User.create(userData);
+    console.log("Update operation result:", JSON.stringify(result, null, 2));
+    return result;
+  } catch (error) {
+    console.error("Error in creating:", error);
+    throw error;
+  }
+}
+
+async function removeToken(user_id) {
+  try {
+    console.log(`userid received in dao: ${user_id}`);
+    const result = await User.findByIdAndUpdate(user_id, {
+      $unset: { token: "", tokenExpiry: "" },
+    });
+    return result;
+  } catch (error) {
+    console.error("Error removing token:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   find,
   findOne,
   updateOne,
+  create,
+  removeToken,
 };

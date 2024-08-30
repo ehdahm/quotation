@@ -48,12 +48,12 @@ export async function register(userData: {
   password: string;
 }) {
   try {
-    const hashedPassword = hashData(userData.password);
+    const { hash, salt, iterations } = hashData(userData.password);
     const response = await authApi.register({
       ...userData,
-      password: hashedPassword.hash,
-      salt: hashedPassword.salt,
-      iterations: hashedPassword.iterations,
+      password: hash,
+      salt: salt,
+      iterations: iterations,
     });
 
     if (response.token) {
@@ -67,8 +67,16 @@ export async function register(userData: {
   }
 }
 
-export function logout() {
-  removeToken();
+export async function logout(user) {
+  try {
+    const response = await authApi.logout(user);
+    removeToken();
+
+    return response;
+  } catch (error) {
+    console.error("Lougout error:", error);
+    throw error;
+  }
 }
 
 export function isAuthenticated() {
