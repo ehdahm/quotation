@@ -37,6 +37,8 @@ export function transformQuotationData(
 
   // Group items by scope_id and room_id
   const groupedItems: Record<string, Record<string, QuotationItem[]>> = {};
+  console.log("groupedItems", groupedItems);
+  console.log(scopeMap);
 
   quotationItems.forEach((item) => {
     if (!groupedItems[item.scope_id]) {
@@ -60,6 +62,7 @@ export function transformQuotationData(
       })),
     })
   );
+  console.log("transform output", quotation, scopes);
 
   return {
     quotation: quotation[0],
