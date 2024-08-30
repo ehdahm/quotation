@@ -14,6 +14,7 @@ import {
   Anchor,
   Stack,
   useMantineTheme,
+  Container,
 } from "@mantine/core";
 import { GoogleButton } from "../components/GoogleButton";
 import { useAuth } from "../hooks/AuthProvider";
@@ -65,107 +66,122 @@ export function AuthenticationForm(props: PaperProps) {
   };
 
   return (
-    <Paper
-      radius="md"
-      p="xl"
-      withBorder
-      {...props}
-      style={{ width: "1000px", maxWidth: 500 }}
+    <Container
+      fluid
+      style={{
+        height: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: theme.colors.gray[0],
+      }}
     >
-      <Text size="lg" fw={500}>
-        Welcome to your Quotation Portal, {type} with
-      </Text>
+      <Paper
+        radius="md"
+        p="xl"
+        withBorder
+        {...props}
+        style={{ width: "1000px", maxWidth: 500 }}
+      >
+        <Text size="lg" fw={500}>
+          Welcome to your Quotation Portal, {type} with
+        </Text>
 
-      <Group grow mb="md" mt="md">
-        <GoogleButton radius="xl">Google</GoogleButton>
-      </Group>
-
-      <Divider label="Or continue with email" labelPosition="center" my="lg" />
-
-      <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack>
-          {type === "register" && (
-            <Stack>
-              <TextInput
-                label="Name"
-                placeholder="Your name"
-                value={form.values.name}
-                onChange={(event) =>
-                  form.setFieldValue("name", event.currentTarget.value)
-                }
-                radius="md"
-              />
-              <TextInput
-                label="Company"
-                placeholder="Your company"
-                value={form.values.company}
-                onChange={(event) =>
-                  form.setFieldValue("company", event.currentTarget.value)
-                }
-                radius="md"
-              />
-            </Stack>
-          )}
-
-          <TextInput
-            required
-            label="Email"
-            placeholder="hello@email.com"
-            value={form.values.email}
-            onChange={(event) =>
-              form.setFieldValue("email", event.currentTarget.value)
-            }
-            error={form.errors.email && "Invalid email"}
-            radius="md"
-          />
-
-          <PasswordInput
-            required
-            label="Password"
-            placeholder="Your password"
-            value={form.values.password}
-            onChange={(event) =>
-              form.setFieldValue("password", event.currentTarget.value)
-            }
-            error={
-              form.errors.password &&
-              "Password should include at least 6 characters"
-            }
-            radius="md"
-          />
-
-          {error && (
-            <Text color="red" size="sm">
-              {error}
-            </Text>
-          )}
-        </Stack>
-
-        <Group justify="space-between" mt="xl">
-          <Anchor
-            component="button"
-            type="button"
-            c="dimmed"
-            onClick={() => toggle()}
-            size="xs"
-          >
-            {type === "register"
-              ? "Already have an account? Login"
-              : "Don't have an account? Register"}
-          </Anchor>
-          <Button
-            type="submit"
-            radius="xl"
-            loading={isLoading}
-            style={{
-              backgroundColor: theme.colors.secondary[0],
-              color: "black",
-            }}
-          >
-            {upperFirst(type)}
-          </Button>
+        <Group grow mb="md" mt="md">
+          <GoogleButton radius="xl">Google</GoogleButton>
         </Group>
-      </form>
-    </Paper>
+
+        <Divider
+          label="Or continue with email"
+          labelPosition="center"
+          my="lg"
+        />
+
+        <form onSubmit={form.onSubmit(handleSubmit)}>
+          <Stack>
+            {type === "register" && (
+              <Stack>
+                <TextInput
+                  label="Name"
+                  placeholder="Your name"
+                  value={form.values.name}
+                  onChange={(event) =>
+                    form.setFieldValue("name", event.currentTarget.value)
+                  }
+                  radius="md"
+                />
+                <TextInput
+                  label="Company"
+                  placeholder="Your company"
+                  value={form.values.company}
+                  onChange={(event) =>
+                    form.setFieldValue("company", event.currentTarget.value)
+                  }
+                  radius="md"
+                />
+              </Stack>
+            )}
+
+            <TextInput
+              required
+              label="Email"
+              placeholder="hello@email.com"
+              value={form.values.email}
+              onChange={(event) =>
+                form.setFieldValue("email", event.currentTarget.value)
+              }
+              error={form.errors.email && "Invalid email"}
+              radius="md"
+            />
+
+            <PasswordInput
+              required
+              label="Password"
+              placeholder="Your password"
+              value={form.values.password}
+              onChange={(event) =>
+                form.setFieldValue("password", event.currentTarget.value)
+              }
+              error={
+                form.errors.password &&
+                "Password should include at least 6 characters"
+              }
+              radius="md"
+            />
+
+            {error && (
+              <Text color="red" size="sm">
+                {error}
+              </Text>
+            )}
+          </Stack>
+
+          <Group justify="space-between" mt="xl">
+            <Anchor
+              component="button"
+              type="button"
+              c="dimmed"
+              onClick={() => toggle()}
+              size="xs"
+            >
+              {type === "register"
+                ? "Already have an account? Login"
+                : "Don't have an account? Register"}
+            </Anchor>
+            <Button
+              type="submit"
+              radius="xl"
+              loading={isLoading}
+              style={{
+                backgroundColor: theme.colors.secondary[0],
+                color: "black",
+              }}
+            >
+              {upperFirst(type)}
+            </Button>
+          </Group>
+        </form>
+      </Paper>
+    </Container>
   );
 }
