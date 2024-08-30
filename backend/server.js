@@ -9,7 +9,6 @@ require("./client/mongo");
 
 var indexRouter = require("./routes/index");
 var authRoutes = require("./routes/auth");
-var usersRoutes = require("./routes/users");
 var clientsRoutes = require("./routes/clients");
 var itemsRoutes = require("./routes/items");
 var quotationsRoutes = require("./routes/quotations");
@@ -33,7 +32,6 @@ app.use(cors());
 // routes
 app.use("/", indexRouter);
 app.use("/api/auth", authRoutes);
-app.use("/api/users", usersRoutes);
 app.use("/api/clients", clientsRoutes);
 app.use("/api/items", itemsRoutes);
 app.use("/api/quotations", quotationsRoutes);
