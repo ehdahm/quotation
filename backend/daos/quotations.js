@@ -13,8 +13,8 @@ const quotationSchema = new mongoose.Schema(
 
 const Quotation = mongoose.model("Quotation", quotationSchema);
 
-function createQuotation(quotationData) {
-  return Quotation.create(quotationData);
+function createQuotation(quotationData, user_id) {
+  return Quotation.create({ ...quotationData, user_id });
 }
 
 function getQuotation(quotationId) {
