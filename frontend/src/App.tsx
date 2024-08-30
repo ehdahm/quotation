@@ -33,9 +33,12 @@ function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/quotation/:clientId" element={<QuotationBuilder />} />
             <Route
-              path="/edit-quotation/:quotationId"
+              path="/quotation/new/:clientId"
+              element={<QuotationBuilder />}
+            />
+            <Route
+              path="/quotation/edit/:quotationId"
               element={<QuotationBuilder />}
             />
           </Routes>

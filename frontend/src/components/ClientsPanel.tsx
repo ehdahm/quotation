@@ -36,7 +36,7 @@ const ClientsPanel = () => {
   }, [clients]);
 
   const handleGenerateQuotation = (clientId: string) => {
-    navigate(`/quotation/${clientId}`);
+    navigate(`/quotation/new/${clientId}`);
   };
 
   return (
