@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Text,
   Button,
@@ -26,6 +26,7 @@ import ProjectSummary from "../components/ProjectSummary.tsx";
 const QuotationBuilder: React.FC = () => {
   const theme = useMantineTheme();
   const { clientId, quotationId } = useParams();
+  const navigate = useNavigate();
   const location = useLocation();
   const isNewQuotation = location.pathname.includes("/new");
 
@@ -38,7 +39,7 @@ const QuotationBuilder: React.FC = () => {
   const resetQuotationState = useCallback(() => {
     setRawQuotationData(null);
     setQuotation({
-      user_id: "mockUser", // or get from auth context
+      user_id: "temp-id", // or get from auth context
       client_id: clientId || "",
       total_cost: 0,
       total_amount: 0,
@@ -422,6 +423,7 @@ const QuotationBuilder: React.FC = () => {
         const refreshedData = await quotationsService.getQuotation(quotationId);
         // Update your state with the refreshed data
         setRawQuotationData(refreshedData);
+        navigate("/");
       }
     } catch (error) {
       console.error("Error saving/updating quotation:", error);

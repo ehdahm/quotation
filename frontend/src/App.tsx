@@ -6,6 +6,8 @@ import ReactDOM from "react-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import QuotationBuilder from "./pages/QuotationBuilder";
+import { AuthenticationForm } from "./pages/AuthenticationPage";
+import { useAuth } from "./hooks/useAuth";
 
 // Create a custom theme
 const theme = createTheme({
@@ -27,12 +29,15 @@ const theme = createTheme({
 });
 
 function App() {
+  const isLoggedIn = useAuth();
+
   return (
     <MantineProvider theme={theme} withGlobalStyles withNormalizeCSS>
       <Router>
         <Layout>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/login" element={<AuthenticationForm />} />
             <Route
               path="/quotation/new/:clientId"
               element={<QuotationBuilder />}
