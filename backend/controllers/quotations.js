@@ -73,9 +73,22 @@ async function getQuotations(req, res) {
   }
 }
 
+async function deleteQuotation(req, res) {
+  try {
+    const { quotationId } = req.params;
+    console.log("quotationid in controller: ", quotationId);
+    const quotations = await quotationService.deleteQuotation(quotationId);
+    res.json(quotations);
+  } catch (error) {
+    console.error("Error in delete quotations in controller:", error);
+    res.status(500).json({ message: "Cannot Work" });
+  }
+}
+
 module.exports = {
   createQuotation,
   getQuotation,
   updateQuotation,
   getQuotations,
+  deleteQuotation,
 };

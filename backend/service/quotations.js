@@ -135,15 +135,29 @@ async function getQuotationsByClientId(clientId) {
   }
 }
 
-module.exports = {
-  createQuotation,
-  getQuotation,
-  updateQuotation,
-};
+async function deleteQuotation(quotationId) {
+  try {
+    const quotationObjectId = new mongoose.Types.ObjectId(quotationId);
+    const quotationItems = await quotationItemsDAO.deleteMany({
+      quotation_id: quotationId,
+    });
+    const quotation = await quotationDAO.deleteQuotation(quotationObjectId);
+
+    const data = {
+      quotation,
+      quotationItems,
+    };
+    return data;
+  } catch (error) {
+    console.error("Error in retrieving quotation:", error);
+    throw error;
+  }
+}
 
 module.exports = {
   createQuotation,
   getQuotation,
   updateQuotation,
   getQuotationsByClientId,
+  deleteQuotation,
 };

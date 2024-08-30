@@ -12,9 +12,15 @@ router.put(
   quotationController.updateQuotation
 );
 // DELETE quotation
+router.delete(
+  "/:quotationId",
+  security.checkJWT,
+  quotationController.deleteQuotation
+);
 
-// GET quotation
+// GET all quotations
 router.get("/", quotationController.getQuotations);
-router.get("/:quotationId", quotationController.getQuotation);
+
+// get quotation by id
 router.get("/:quotationId", quotationController.getQuotation);
 module.exports = router;
