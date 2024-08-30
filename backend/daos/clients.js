@@ -19,7 +19,18 @@ function createClient(clientData) {
   return Client.create(clientData);
 }
 
+function updateClient(client_id, clientData) {
+  return Client.findByIdAndUpdate(client_id, clientData, { new: true });
+}
+
+function deleteClient(client_id) {
+  console.log(JSON.stringify(client_id));
+  return Client.deleteOne(client_id);
+}
+
 module.exports = {
   getClients,
   createClient,
+  updateClient,
+  deleteClient,
 };

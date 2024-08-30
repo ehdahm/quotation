@@ -11,6 +11,8 @@ import {
   Flex,
   Modal,
   TextInput,
+  ActionIcon,
+  Menu,
 } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { Client } from "../types";
@@ -18,16 +20,26 @@ import classes from "./BadgeCard.module.css";
 import SavedQuotationsComponent from "./SavedQuotationsComponent";
 import * as clientsService from "../services/clients";
 import { useDisclosure } from "@mantine/hooks";
+import {
+  IconDots,
+  IconEdit,
+  IconScriptPlus,
+  IconTrash,
+} from "@tabler/icons-react";
 
 const ClientsPanel = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [activeTab, setActiveTab] = useState<string | null>("Clients");
-  const [opened, { open, close }] = useDisclosure(false);
+  const [newClientOpened, { open: openNewClient, close: closeNewClient }] =
+    useDisclosure(false);
+  const [editClientOpened, { open: openEditClient, close: closeEditClient }] =
+    useDisclosure(false);
   const [newClient, setNewClient] = useState({
     name: "",
     phone: "",
     address: "",
   });
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const navigate = useNavigate();
   const theme = useMantineTheme();
 
@@ -64,6 +76,40 @@ const ClientsPanel = () => {
     } catch (error) {
       console.error("Error adding client:", error);
       // You might want to show an error message to the user here
+    }
+  };
+
+  const handleEditClient = (client: Client) => {
+    setEditingClient({ ...client }); // Create a copy of the client object
+    openEditClient();
+  };
+
+  const handleUpdateClient = async () => {
+    if (!editingClient) return;
+    try {
+      const updatedClient = await clientsService.updateClient(
+        editingClient._id,
+        editingClient
+      );
+      setClients(
+        clients.map((c) => (c._id === updatedClient._id ? updatedClient : c))
+      );
+      closeEditClient();
+    } catch (error) {
+      console.error("Error updating client:", error);
+    }
+  };
+
+  const handleEditInputChange = (field: keyof Client, value: string) => {
+    setEditingClient((prev) => (prev ? { ...prev, [field]: value } : null));
+  };
+
+  const handleDeleteClient = async (clientId: string) => {
+    try {
+      await clientsService.deleteClient(clientId);
+      setClients(clients.filter((c) => c._id !== clientId));
+    } catch (error) {
+      console.error("Error deleting client:", error);
     }
   };
 
@@ -120,8 +166,8 @@ const ClientsPanel = () => {
       <Tabs.Panel value="Clients">
         <div>
           <Modal
-            opened={opened}
-            onClose={close}
+            opened={newClientOpened}
+            onClose={closeNewClient}
             title="Add New Client"
             centered
           >
@@ -161,6 +207,43 @@ const ClientsPanel = () => {
               </Button>
             </Stack>
           </Modal>
+
+          <Modal
+            opened={editClientOpened}
+            onClose={closeEditClient}
+            title="Edit Client"
+            centered
+          >
+            <Stack>
+              <TextInput
+                label="Name"
+                value={editingClient?.name || ""}
+                onChange={(e) => handleEditInputChange("name", e.target.value)}
+              />
+              <TextInput
+                label="Phone"
+                value={editingClient?.phone || ""}
+                onChange={(e) => handleEditInputChange("phone", e.target.value)}
+              />
+              <TextInput
+                label="Address"
+                value={editingClient?.address || ""}
+                onChange={(e) =>
+                  handleEditInputChange("address", e.target.value)
+                }
+              />
+              <Button
+                onClick={handleUpdateClient}
+                style={{
+                  backgroundColor: theme.colors.secondary[0],
+                  color: "black",
+                }}
+              >
+                Update Client
+              </Button>
+            </Stack>
+          </Modal>
+
           <Button
             onClick={handleOpenModal}
             variant="transparent"
@@ -173,9 +256,12 @@ const ClientsPanel = () => {
             <Card
               key={client._id}
               shadow="sm"
-              padding="xl"
+              padding="lg"
               className={classes.card}
-              style={{ backgroundColor: theme.colors.primary[0] }}
+              style={{
+                backgroundColor: theme.colors.primary[0],
+                position: "relative",
+              }}
             >
               <Group>
                 <Stack gap="md" style={{ flexGrow: 1 }}>
@@ -185,17 +271,49 @@ const ClientsPanel = () => {
                   <Text size="sm">{client.phone}</Text>
                   <Text size="sm">{client.address}</Text>
                 </Stack>
-                <Button
-                  onClick={() => handleGenerateQuotation(client._id)}
-                  style={{
-                    flexGrow: 0,
-                    backgroundColor: theme.colors.secondary[0],
-                    color: "black",
-                  }}
-                >
-                  Create Quotation
-                </Button>
+                <Stack>
+                  <Menu>
+                    <Menu.Target>
+                      <ActionIcon
+                        variant="transparent"
+                        style={{ position: "absolute", top: 8, right: 8 }}
+                      >
+                        <IconDots style={{ color: "black" }} />
+                      </ActionIcon>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item
+                        leftSection={<IconEdit size={14} />}
+                        onClick={() => handleEditClient(client)}
+                      >
+                        Edit
+                      </Menu.Item>
+                      <Menu.Item
+                        leftSection={<IconTrash size={14} />}
+                        onClick={() => handleDeleteClient(client._id)}
+                        color="red"
+                      >
+                        Delete
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                  <ActionIcon
+                    variant="transparent"
+                    onClick={() => handleGenerateQuotation(client._id)}
+                    style={{
+                      flexGrow: 0,
+                      backgroundColor: theme.colors.secondary[0],
+                      color: "black",
+                      position: "absolute",
+                      top: 70,
+                      right: 8,
+                    }}
+                  >
+                    <IconScriptPlus size={"10rem"} />
+                  </ActionIcon>
+                </Stack>
               </Group>
+
               <Box style={{ flexGrow: 1, maxWidth: "60%" }}>
                 <SavedQuotationsComponent clientId={client._id} />
               </Box>
