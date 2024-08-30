@@ -40,40 +40,47 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 
+function AppContent() {
+  const { isAuthenticated } = useAuth();
+
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={
+          !isAuthenticated ? <AuthenticationForm /> : <Navigate to="/" />
+        }
+      />
+      <Route
+        path="/*"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route
+                  path="/quotation/new/:clientId"
+                  element={<QuotationBuilder />}
+                />
+                <Route
+                  path="/quotation/edit/:quotationId"
+                  element={<QuotationBuilder />}
+                />
+              </Routes>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
       <MantineProvider theme={theme} withGlobalStyles withNormalizeCSS>
         <Router>
-          <Layout>
-            <Routes>
-              <Route path="/login" element={<AuthenticationForm />} />
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <Home />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/quotation/new/:clientId"
-                element={
-                  <ProtectedRoute>
-                    <QuotationBuilder />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/quotation/edit/:quotationId"
-                element={
-                  <ProtectedRoute>
-                    <QuotationBuilder />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </Layout>
+          <AppContent />
         </Router>
       </MantineProvider>
     </AuthProvider>

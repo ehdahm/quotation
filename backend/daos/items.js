@@ -19,6 +19,11 @@ const Item = mongoose.model("Item", itemSchema);
 function findBySkuId(skuId) {
   return Item.findOne({ skuId });
 }
+
+function getAllItems(user_id) {
+  return Item.find({ user_id });
+}
 module.exports = {
   findBySkuId,
+  getAllItems,
 };

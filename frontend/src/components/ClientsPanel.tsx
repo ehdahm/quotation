@@ -12,17 +12,21 @@ import {
   TextInput,
   ActionIcon,
   Menu,
+  Input,
+  Table,
 } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { Client } from "../types";
 import classes from "./BadgeCard.module.css";
 import SavedQuotationsComponent from "./SavedQuotationsComponent";
 import * as clientsService from "../services/clients";
+import * as itemsService from "../services/items";
 import { useDisclosure } from "@mantine/hooks";
 import {
   IconDots,
   IconEdit,
   IconScriptPlus,
+  IconSearch,
   IconTrash,
 } from "@tabler/icons-react";
 
@@ -41,6 +45,21 @@ const ClientsPanel = () => {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const navigate = useNavigate();
   const theme = useMantineTheme();
+
+  const [items, setItems] = useState<Item[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      const fetchedItems = await itemsService.getItems();
+      setItems(fetchedItems);
+    };
+    fetchItems();
+  }, []);
+
+  const filteredItems = items.filter((item) =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -305,7 +324,33 @@ const ClientsPanel = () => {
         </div>
       </Tabs.Panel>
 
-      <Tabs.Panel value="Items">{/* Content for Items tab */}</Tabs.Panel>
+      <Tabs.Panel value="Items">
+        <Box p="md">
+          <Input
+            icon={<IconSearch />}
+            placeholder="Search items by name"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.currentTarget.value)}
+            mb="md"
+          />
+          <Table>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>SKU ID</Table.Th>
+                <Table.Th>Item Name</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {filteredItems.map((item) => (
+                <Table.Tr key={item._id}>
+                  <Table.Td>{item.skuId}</Table.Td>
+                  <Table.Td>{item.name}</Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Box>
+      </Tabs.Panel>
     </Tabs>
   );
 };

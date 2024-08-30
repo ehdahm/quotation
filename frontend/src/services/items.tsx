@@ -9,3 +9,13 @@ export async function getItemBySkuId(skuId: string) {
     throw error;
   }
 }
+
+export async function getItems() {
+  try {
+    const items = await itemsApi.getItems();
+    return items;
+  } catch (error) {
+    console.error("Error fetching room:", error);
+    throw error;
+  }
+}
