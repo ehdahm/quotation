@@ -31,9 +31,9 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 
 // routes
+app.use("/api/auth", authRoutes);
 app.use(security.checkJWT);
 app.use("/", indexRouter);
-app.use("/api/auth", authRoutes);
 app.use("/api/clients", clientsRoutes);
 app.use("/api/items", itemsRoutes);
 app.use("/api/quotations", quotationsRoutes);

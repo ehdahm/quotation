@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToggle, upperFirst } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
@@ -16,7 +16,7 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { GoogleButton } from "../components/GoogleButton";
-import * as authService from "../services/auth";
+import { useAuth } from "../hooks/AuthProvider";
 
 export function AuthenticationForm(props: PaperProps) {
   const theme = useMantineTheme();
@@ -24,12 +24,7 @@ export function AuthenticationForm(props: PaperProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (authService.isAuthenticated()) {
-      navigate("/");
-    }
-  }, [navigate]);
+  const { login, register } = useAuth();
 
   const form = useForm({
     initialValues: {
@@ -51,16 +46,15 @@ export function AuthenticationForm(props: PaperProps) {
     setError(null);
 
     try {
-      let response;
       if (type === "login") {
-        response = await authService.login({
+        await login({
           email: values.email,
           password: values.password,
         });
       } else {
-        response = await authService.register(values);
+        console.log("register", values);
+        await register(values);
       }
-      console.log("Authentication successful:", response);
       navigate("/");
     } catch (err) {
       console.error("Authentication error:", err);

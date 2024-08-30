@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
 import "@mantine/core/styles.css";
 import { MantineProvider, createTheme } from "@mantine/core";
 import React from "react";
@@ -7,7 +12,7 @@ import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import QuotationBuilder from "./pages/QuotationBuilder";
 import { AuthenticationForm } from "./pages/AuthenticationPage";
-import { useAuth } from "./hooks/useAuth";
+import { AuthProvider, useAuth } from "./hooks/AuthProvider";
 
 // Create a custom theme
 const theme = createTheme({
@@ -16,6 +21,7 @@ const theme = createTheme({
     background: ["#f2f1ea"], // Add more shades if needed
     primary: ["#f7f7f4"], // For quotation pages and badge cards
     secondary: ["#e3dfd0"], // For tabs or nav bars
+    accent: ["#c05f3c"],
   },
   components: {
     Body: {
@@ -27,29 +33,50 @@ const theme = createTheme({
     },
   },
 });
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+};
 
 function App() {
-  const isLoggedIn = useAuth();
-
   return (
-    <MantineProvider theme={theme} withGlobalStyles withNormalizeCSS>
-      <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<AuthenticationForm />} />
-            <Route
-              path="/quotation/new/:clientId"
-              element={<QuotationBuilder />}
-            />
-            <Route
-              path="/quotation/edit/:quotationId"
-              element={<QuotationBuilder />}
-            />
-          </Routes>
-        </Layout>
-      </Router>
-    </MantineProvider>
+    <AuthProvider>
+      <MantineProvider theme={theme} withGlobalStyles withNormalizeCSS>
+        <Router>
+          <Layout>
+            <Routes>
+              <Route path="/login" element={<AuthenticationForm />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Home />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/quotation/new/:clientId"
+                element={
+                  <ProtectedRoute>
+                    <QuotationBuilder />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/quotation/edit/:quotationId"
+                element={
+                  <ProtectedRoute>
+                    <QuotationBuilder />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </Layout>
+        </Router>
+      </MantineProvider>
+    </AuthProvider>
   );
 }
 
