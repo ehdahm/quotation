@@ -1,4 +1,5 @@
 const clientDao = require("../daos/clients");
+const clientService = require("../service/clients");
 
 async function getClients(req, res) {
   try {
@@ -15,6 +16,23 @@ async function getClients(req, res) {
   }
 }
 
+async function createClient(req, res) {
+  try {
+    const { user_id } = req.user;
+    const clientData = req.body;
+    console.log(`received clientData in controller: ${clientData}`);
+    const client = await clientService.createClient(clientData, user_id);
+    console.log("created client: ", client);
+    if (!client) {
+      return res.status(404).json({ message: "Client creation failed" });
+    }
+    res.json(client);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+}
+
 module.exports = {
   getClients,
+  createClient,
 };

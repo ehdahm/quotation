@@ -8,7 +8,7 @@ router.get("/", security.checkLogin, clientController.getClients);
 // UPDATE a client's detail
 
 // CREATE a client
-
+router.post("/", security.checkLogin, clientController.createClient);
 // DELETE a client
 
 module.exports = router;
