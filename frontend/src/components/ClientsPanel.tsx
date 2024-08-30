@@ -8,20 +8,26 @@ import {
   Tabs,
   useMantineTheme,
   Box,
-  ActionIcon,
   Flex,
+  Modal,
+  TextInput,
 } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { Client } from "../types";
 import classes from "./BadgeCard.module.css";
 import SavedQuotationsComponent from "./SavedQuotationsComponent";
 import * as clientsService from "../services/clients";
-import { IconPlus } from "@tabler/icons-react";
+import { useDisclosure } from "@mantine/hooks";
 
 const ClientsPanel = () => {
   const [clients, setClients] = useState<Client[]>([]);
-  const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string | null>("Clients");
+  const [opened, { open, close }] = useDisclosure(false);
+  const [newClient, setNewClient] = useState({
+    name: "",
+    phone: "",
+    address: "",
+  });
   const navigate = useNavigate();
   const theme = useMantineTheme();
 
@@ -44,12 +50,20 @@ const ClientsPanel = () => {
     navigate(`/quotation/new/${clientId}`);
   };
 
-  const handleAddNew = () => {
-    if (activeTab === "Clients") {
-      console.log(`processing add new for ${activeTab}`);
-    }
-    if (activeTab === "Items") {
-      console.log(`processing add new for ${activeTab}`);
+  const handleOpenModal = () => {
+    open();
+  };
+
+  const handleAddClient = async () => {
+    try {
+      console.log(`adding a new client: ${newClient}`);
+      const createdClient = await clientsService.createClient(newClient);
+      setClients([...clients, createdClient]);
+      close();
+      setNewClient({ name: "", phone: "", address: "" });
+    } catch (error) {
+      console.error("Error adding client:", error);
+      // You might want to show an error message to the user here
     }
   };
 
@@ -101,19 +115,60 @@ const ClientsPanel = () => {
             </Tabs.Tab>
           </Tabs.List>
         </Flex>
-        <ActionIcon
-          variant="filled"
-          color={theme.colors.secondary[0]}
-          onClick={handleAddNew()}
-          title="Add Client"
-          style={{ marginRight: "15px" }}
-        >
-          <IconPlus color="black" size={18} />
-        </ActionIcon>
       </Flex>
 
       <Tabs.Panel value="Clients">
         <div>
+          <Modal
+            opened={opened}
+            onClose={close}
+            title="Add New Client"
+            centered
+          >
+            <Stack>
+              <TextInput
+                label="Name"
+                placeholder="Enter client name"
+                value={newClient.name}
+                onChange={(e) =>
+                  setNewClient({ ...newClient, name: e.target.value })
+                }
+              />
+              <TextInput
+                label="Phone"
+                placeholder="Enter phone number"
+                value={newClient.phone}
+                onChange={(e) =>
+                  setNewClient({ ...newClient, phone: e.target.value })
+                }
+              />
+              <TextInput
+                label="Address"
+                placeholder="Enter address"
+                value={newClient.address}
+                onChange={(e) =>
+                  setNewClient({ ...newClient, address: e.target.value })
+                }
+              />
+              <Button
+                onClick={handleAddClient}
+                style={{
+                  backgroundColor: theme.colors.secondary[0],
+                  color: "black",
+                }}
+              >
+                Add Client
+              </Button>
+            </Stack>
+          </Modal>
+          <Button
+            onClick={handleOpenModal}
+            variant="transparent"
+            fullWidth
+            style={{ marginRight: "auto", color: "black" }}
+          >
+            + New
+          </Button>
           {clients.map((client) => (
             <Card
               key={client._id}

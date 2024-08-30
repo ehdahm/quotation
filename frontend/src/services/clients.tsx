@@ -9,3 +9,13 @@ export async function getClients() {
     throw error;
   }
 }
+
+export async function createClient(clientData) {
+  try {
+    const createdClient = await clientsApi.createClient(clientData);
+    return createdClient;
+  } catch (error) {
+    console.error("Error creating client:", error);
+    throw error;
+  }
+}

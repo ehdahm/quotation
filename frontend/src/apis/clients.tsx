@@ -4,4 +4,6 @@ export function getClients() {
   return sendRequest(`/clients`);
 }
 
-// read token to local storage
+export function createClient(clientData) {
+  return sendRequest("/clients", "POST", clientData);
+}

@@ -2,8 +2,8 @@ const mongoose = require("mongoose");
 
 const quotationSchema = new mongoose.Schema(
   {
-    user_id: {},
-    client_id: {},
+    user_id: { type: mongoose.ObjectId, required: true },
+    client_id: { type: mongoose.ObjectId, required: true },
     total_cost: { type: Number, required: true },
     total_amount: { type: Number, required: true },
     profit_margin: { type: Number, required: true },
