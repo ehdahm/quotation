@@ -33,7 +33,7 @@ interface ScopeOfWorkProps {
     updates: Partial<QuotationItem>
   ) => void;
   onCommitItem: (room_id: number, itemId: string) => void;
-  onCancelEdit: (room_id: number, itemId: string) => void;
+  onDeleteItem: (room_id: number, itemId: string) => void;
   onRemoveScope: () => void;
   roomNames: string[];
 }
@@ -45,7 +45,7 @@ const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
   onAddItem,
   onUpdateItem,
   onCommitItem,
-  onCancelEdit,
+  onDeleteItem,
   onRemoveScope,
   roomNames,
 }) => {
@@ -135,7 +135,7 @@ const ScopeOfWork: React.FC<ScopeOfWorkProps> = ({
               onUpdateItem(room.id, itemId, updates)
             }
             onCommitItem={(itemId) => onCommitItem(room.id, itemId)}
-            onCancelEdit={(itemId) => onCancelEdit(room.id, itemId)}
+            onDeleteItem={(itemId) => onDeleteItem(room.id, itemId)}
           />
         ))}
       </Stack>
