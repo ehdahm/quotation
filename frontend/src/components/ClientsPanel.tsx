@@ -8,7 +8,6 @@ import {
   Tabs,
   useMantineTheme,
   Box,
-  Flex,
   Modal,
   TextInput,
   ActionIcon,
@@ -52,18 +51,12 @@ const ClientsPanel = () => {
     fetchClients();
   }, []);
 
-  useEffect(() => {
-    if (clients.length > 0) {
-      console.log(clients);
-    }
-  }, [clients]);
-
   const handleGenerateQuotation = (clientId: string) => {
     navigate(`/quotation/new/${clientId}`);
   };
 
-  const handleOpenModal = () => {
-    open();
+  const handleOpenNewClientModal = () => {
+    openNewClient();
   };
 
   const handleAddClient = async () => {
@@ -71,16 +64,15 @@ const ClientsPanel = () => {
       console.log(`adding a new client: ${newClient}`);
       const createdClient = await clientsService.createClient(newClient);
       setClients([...clients, createdClient]);
-      close();
+      closeNewClient();
       setNewClient({ name: "", phone: "", address: "" });
     } catch (error) {
       console.error("Error adding client:", error);
-      // You might want to show an error message to the user here
     }
   };
 
   const handleEditClient = (client: Client) => {
-    setEditingClient({ ...client }); // Create a copy of the client object
+    setEditingClient({ ...client });
     openEditClient();
   };
 
@@ -119,211 +111,209 @@ const ClientsPanel = () => {
   };
 
   return (
-    <Tabs
-      defaultValue="Clients"
-      value={activeTab}
-      onChange={handleTabChange}
-      style={{ backgroundColor: theme.colors.background[0] }}
-    >
-      <Flex
-        align="center"
-        style={{
-          backgroundColor: theme.colors.secondary[0],
-          height: "40px",
-          justifyContent: "space-between",
-        }}
+    <>
+      <Box style={{ height: "40px" }}></Box>
+      <Tabs
+        defaultValue="Clients"
+        value={activeTab}
+        onChange={handleTabChange}
+        style={{ backgroundColor: theme.colors.background[0] }}
       >
-        <Flex style={{ flexGrow: 1 }}>
-          <Tabs.List style={{ display: "flex", width: "50%" }}>
-            <Tabs.Tab
-              value="Clients"
-              style={{
-                flex: 1,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-              }}
-            >
-              Clients
-            </Tabs.Tab>
-            <Tabs.Tab
-              value="Items"
-              style={{
-                flex: 1,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-              }}
-            >
-              Items
-            </Tabs.Tab>
-          </Tabs.List>
-        </Flex>
-      </Flex>
-
-      <Tabs.Panel value="Clients">
-        <div>
-          <Modal
-            opened={newClientOpened}
-            onClose={closeNewClient}
-            title="Add New Client"
-            centered
+        <Tabs.List grow justify="space-between">
+          <Tabs.Tab
+            value="Clients"
+            style={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              backgroundColor: theme.colors.secondary[0],
+            }}
           >
-            <Stack>
-              <TextInput
-                label="Name"
-                placeholder="Enter client name"
-                value={newClient.name}
-                onChange={(e) =>
-                  setNewClient({ ...newClient, name: e.target.value })
-                }
-              />
-              <TextInput
-                label="Phone"
-                placeholder="Enter phone number"
-                value={newClient.phone}
-                onChange={(e) =>
-                  setNewClient({ ...newClient, phone: e.target.value })
-                }
-              />
-              <TextInput
-                label="Address"
-                placeholder="Enter address"
-                value={newClient.address}
-                onChange={(e) =>
-                  setNewClient({ ...newClient, address: e.target.value })
-                }
-              />
-              <Button
-                onClick={handleAddClient}
+            Clients
+          </Tabs.Tab>
+          <Tabs.Tab
+            value="Items"
+            style={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              backgroundColor: theme.colors.secondary[0],
+            }}
+          >
+            Items
+          </Tabs.Tab>
+        </Tabs.List>
+
+        <Tabs.Panel value="Clients">
+          <div>
+            <Modal
+              opened={newClientOpened}
+              onClose={closeNewClient}
+              title="Add New Client"
+              centered
+            >
+              <Stack>
+                <TextInput
+                  label="Name"
+                  placeholder="Enter client name"
+                  value={newClient.name}
+                  onChange={(e) =>
+                    setNewClient({ ...newClient, name: e.target.value })
+                  }
+                />
+                <TextInput
+                  label="Phone"
+                  placeholder="Enter phone number"
+                  value={newClient.phone}
+                  onChange={(e) =>
+                    setNewClient({ ...newClient, phone: e.target.value })
+                  }
+                />
+                <TextInput
+                  label="Address"
+                  placeholder="Enter address"
+                  value={newClient.address}
+                  onChange={(e) =>
+                    setNewClient({ ...newClient, address: e.target.value })
+                  }
+                />
+                <Button
+                  onClick={handleAddClient}
+                  style={{
+                    backgroundColor: theme.colors.secondary[0],
+                    color: "black",
+                  }}
+                >
+                  Add Client
+                </Button>
+              </Stack>
+            </Modal>
+
+            <Modal
+              opened={editClientOpened}
+              onClose={closeEditClient}
+              title="Edit Client"
+              centered
+            >
+              <Stack>
+                <TextInput
+                  label="Name"
+                  value={editingClient?.name || ""}
+                  onChange={(e) =>
+                    handleEditInputChange("name", e.target.value)
+                  }
+                />
+                <TextInput
+                  label="Phone"
+                  value={editingClient?.phone || ""}
+                  onChange={(e) =>
+                    handleEditInputChange("phone", e.target.value)
+                  }
+                />
+                <TextInput
+                  label="Address"
+                  value={editingClient?.address || ""}
+                  onChange={(e) =>
+                    handleEditInputChange("address", e.target.value)
+                  }
+                />
+                <Button
+                  onClick={handleUpdateClient}
+                  style={{
+                    backgroundColor: theme.colors.secondary[0],
+                    color: "black",
+                  }}
+                >
+                  Update Client
+                </Button>
+              </Stack>
+            </Modal>
+
+            <Button
+              onClick={handleOpenNewClientModal}
+              variant="transparent"
+              fullWidth
+              style={{ marginRight: "auto", color: "black" }}
+            >
+              + New
+            </Button>
+            {clients.map((client) => (
+              <Card
+                key={client._id}
+                shadow="sm"
+                padding="lg"
+                className={classes.card}
                 style={{
-                  backgroundColor: theme.colors.secondary[0],
-                  color: "black",
+                  backgroundColor: theme.colors.primary[0],
+                  position: "relative",
                 }}
               >
-                Add Client
-              </Button>
-            </Stack>
-          </Modal>
+                <Group>
+                  <Stack gap="md" style={{ flexGrow: 1 }}>
+                    <Text size="20px" fw={500} className={classes.label}>
+                      {client.name}
+                    </Text>
+                    <Text size="sm">{client.phone}</Text>
+                    <Text size="sm">{client.address}</Text>
+                  </Stack>
+                  <Stack>
+                    <Menu>
+                      <Menu.Target>
+                        <ActionIcon
+                          variant="transparent"
+                          style={{ position: "absolute", top: 8, right: 8 }}
+                        >
+                          <IconDots style={{ color: "black" }} />
+                        </ActionIcon>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item
+                          leftSection={<IconEdit size={14} />}
+                          onClick={() => handleEditClient(client)}
+                        >
+                          Edit
+                        </Menu.Item>
+                        <Menu.Item
+                          leftSection={<IconTrash size={14} />}
+                          onClick={() => handleDeleteClient(client._id)}
+                          color="red"
+                        >
+                          Delete
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
+                    <ActionIcon
+                      variant="transparent"
+                      onClick={() => handleGenerateQuotation(client._id)}
+                      style={{
+                        flexGrow: 0,
+                        backgroundColor: theme.colors.secondary[0],
+                        color: "black",
+                        position: "absolute",
+                        top: 70,
+                        right: 8,
+                      }}
+                    >
+                      <IconScriptPlus size={"10rem"} />
+                    </ActionIcon>
+                  </Stack>
+                </Group>
 
-          <Modal
-            opened={editClientOpened}
-            onClose={closeEditClient}
-            title="Edit Client"
-            centered
-          >
-            <Stack>
-              <TextInput
-                label="Name"
-                value={editingClient?.name || ""}
-                onChange={(e) => handleEditInputChange("name", e.target.value)}
-              />
-              <TextInput
-                label="Phone"
-                value={editingClient?.phone || ""}
-                onChange={(e) => handleEditInputChange("phone", e.target.value)}
-              />
-              <TextInput
-                label="Address"
-                value={editingClient?.address || ""}
-                onChange={(e) =>
-                  handleEditInputChange("address", e.target.value)
-                }
-              />
-              <Button
-                onClick={handleUpdateClient}
-                style={{
-                  backgroundColor: theme.colors.secondary[0],
-                  color: "black",
-                }}
-              >
-                Update Client
-              </Button>
-            </Stack>
-          </Modal>
+                <Box style={{ flexGrow: 1, maxWidth: "60%" }}>
+                  <SavedQuotationsComponent clientId={client._id} />
+                </Box>
+              </Card>
+            ))}
+          </div>
+        </Tabs.Panel>
 
-          <Button
-            onClick={handleOpenModal}
-            variant="transparent"
-            fullWidth
-            style={{ marginRight: "auto", color: "black" }}
-          >
-            + New
-          </Button>
-          {clients.map((client) => (
-            <Card
-              key={client._id}
-              shadow="sm"
-              padding="lg"
-              className={classes.card}
-              style={{
-                backgroundColor: theme.colors.primary[0],
-                position: "relative",
-              }}
-            >
-              <Group>
-                <Stack gap="md" style={{ flexGrow: 1 }}>
-                  <Text size="20px" fw={500} className={classes.label}>
-                    {client.name}
-                  </Text>
-                  <Text size="sm">{client.phone}</Text>
-                  <Text size="sm">{client.address}</Text>
-                </Stack>
-                <Stack>
-                  <Menu>
-                    <Menu.Target>
-                      <ActionIcon
-                        variant="transparent"
-                        style={{ position: "absolute", top: 8, right: 8 }}
-                      >
-                        <IconDots style={{ color: "black" }} />
-                      </ActionIcon>
-                    </Menu.Target>
-                    <Menu.Dropdown>
-                      <Menu.Item
-                        leftSection={<IconEdit size={14} />}
-                        onClick={() => handleEditClient(client)}
-                      >
-                        Edit
-                      </Menu.Item>
-                      <Menu.Item
-                        leftSection={<IconTrash size={14} />}
-                        onClick={() => handleDeleteClient(client._id)}
-                        color="red"
-                      >
-                        Delete
-                      </Menu.Item>
-                    </Menu.Dropdown>
-                  </Menu>
-                  <ActionIcon
-                    variant="transparent"
-                    onClick={() => handleGenerateQuotation(client._id)}
-                    style={{
-                      flexGrow: 0,
-                      backgroundColor: theme.colors.secondary[0],
-                      color: "black",
-                      position: "absolute",
-                      top: 70,
-                      right: 8,
-                    }}
-                  >
-                    <IconScriptPlus size={"10rem"} />
-                  </ActionIcon>
-                </Stack>
-              </Group>
-
-              <Box style={{ flexGrow: 1, maxWidth: "60%" }}>
-                <SavedQuotationsComponent clientId={client._id} />
-              </Box>
-            </Card>
-          ))}
-        </div>
-      </Tabs.Panel>
-
-      <Tabs.Panel value="Items">{/* Content for Items tab */}</Tabs.Panel>
-    </Tabs>
+        <Tabs.Panel value="Items">{/* Content for Items tab */}</Tabs.Panel>
+      </Tabs>
+    </>
   );
 };
 
