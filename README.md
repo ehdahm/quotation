@@ -4,6 +4,21 @@
 QuotePro is a comprehensive quotation management system designed to streamline the process of creating, managing, and tracking quotes for businesses. It provides an intuitive interface for users to create detailed quotations with multiple scopes of work, rooms, and items, making it ideal for contractors, interior designers, and other service-based businesses.
 
 ## Screenshot
+### Initial Wireframe
+![IMG_20240817_113016](https://github.com/user-attachments/assets/286bb28a-f2f0-4ee8-9f4b-07ce45b31eca)
+
+### User Requirement
+![Screenshot_20240822_205843_Adobe Acrobat](https://github.com/user-attachments/assets/a46d5a54-bafc-4174-9837-c86e97bedbda)
+
+
+### Beginning Wireframe
+![image (2)](https://github.com/user-attachments/assets/c10ce9ea-416e-4151-a30d-d1dd7289a0c7)
+
+### Final Output
+![image](https://github.com/user-attachments/assets/9a5fee6f-5f90-4621-a2a0-92e29303ad9c)
+
+## ERD
+![mermaid-diagram-2024-08-30-235455](https://github.com/user-attachments/assets/b6c90cbe-7789-4aa3-bf60-09ce134a2c14)
 
 
 ## Technologies Used
