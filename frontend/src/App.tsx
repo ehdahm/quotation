@@ -13,6 +13,10 @@ import Home from "./pages/Home";
 import QuotationBuilder from "./pages/QuotationBuilder";
 import { AuthenticationForm } from "./pages/AuthenticationPage";
 import { AuthProvider, useAuth } from "./hooks/AuthProvider";
+import { Notifications } from "@mantine/notifications";
+
+import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
 
 // Create a custom theme
 const theme = createTheme({
@@ -76,12 +80,15 @@ function AppContent() {
 }
 
 function App() {
+  console.log(`app component rendering`);
   return (
     <AuthProvider>
       <MantineProvider theme={theme} withGlobalStyles withNormalizeCSS>
+        {/* <Notifications> */}
         <Router>
           <AppContent />
         </Router>
+        {/* </Notifications> */}
       </MantineProvider>
     </AuthProvider>
   );

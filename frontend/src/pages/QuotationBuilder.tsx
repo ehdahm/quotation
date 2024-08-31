@@ -11,10 +11,9 @@ import {
   useCombobox,
   ActionIcon,
   CheckIcon,
-  Flex,
   Center,
 } from "@mantine/core";
-import { Client, QuotationItem, Quotation, Scope } from "../types";
+import { QuotationItem, Quotation, Scope } from "../types";
 import ScopeOfWork from "../components/ScopeOfWork";
 import * as itemsService from "../services/items";
 import * as quotationsService from "../services/quotations";
@@ -22,6 +21,7 @@ import { getIdFromName } from "../utils/dataMappingFunctions.ts";
 import useStaticData from "../hooks/useStaticData.ts";
 import { transformQuotationData } from "../utils/transformQuotationData.ts";
 import ProjectSummary from "../components/ProjectSummary.tsx";
+import { notifications } from "@mantine/notifications";
 
 const QuotationBuilder: React.FC = () => {
   const theme = useMantineTheme();
@@ -35,6 +35,9 @@ const QuotationBuilder: React.FC = () => {
   const [quotationItems, setQuotationItems] = useState<QuotationItem[]>([]);
   const { scopeOfWorks, rooms, isLoading, error } = useStaticData();
   const [rawQuotationData, setRawQuotationData] = useState<any>(null);
+
+  // IMPLEMENT THE QOL STATE CHECKS
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const resetQuotationState = useCallback(() => {
     setRawQuotationData(null);
@@ -238,6 +241,7 @@ const QuotationBuilder: React.FC = () => {
     }));
     console.log(`quotationState `, quotation);
     console.log(`quotaitonItemState `, quotationItems);
+    setHasUnsavedChanges(true);
   };
 
   const handleUpdateItem = (
@@ -384,6 +388,14 @@ const QuotationBuilder: React.FC = () => {
   };
 
   const handleSaveQuotation = async () => {
+    if (!hasUnsavedChanges) {
+      notifications.show({
+        title: "No changes to save",
+        message: "No changes were made to the quotation.",
+        color: "blue",
+      });
+      return;
+    }
     try {
       const processedQuotationItems = quotationItems.map((item) => {
         if (item._id && !item._id.startsWith("temp-")) {
@@ -423,10 +435,27 @@ const QuotationBuilder: React.FC = () => {
         const refreshedData = await quotationsService.getQuotation(quotationId);
         // Update your state with the refreshed data
         setRawQuotationData(refreshedData);
+      }
+
+      setHasUnsavedChanges(false);
+      notifications.show({
+        title: "Success",
+        message: "Quotation saved successfully!",
+        color: "green",
+      });
+
+      if (quotationId) {
+        const refreshedData = await quotationsService.getQuotation(quotationId);
+        setRawQuotationData(refreshedData);
         navigate("/");
       }
     } catch (error) {
       console.error("Error saving/updating quotation:", error);
+      notifications.show({
+        title: "Error",
+        message: "Failed to save quotation. Please try again.",
+        color: "red",
+      });
     }
   };
 
@@ -449,6 +478,7 @@ const QuotationBuilder: React.FC = () => {
             variant="transparent"
             onClick={handleSaveQuotation}
             title="Save Quotation"
+            disabled={!hasUnsavedChanges}
           >
             <CheckIcon size={18} />
           </ActionIcon>
