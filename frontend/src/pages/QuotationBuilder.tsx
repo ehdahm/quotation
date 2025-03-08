@@ -69,7 +69,7 @@ const QuotationBuilder: React.FC = () => {
       };
       fetchQuotation();
     }
-  }, [quotationId, isNewQuotation, resetQuotationState]);
+  }, [quotationId, isNewQuotation, resetQuotationState, clientId]);
 
   // =================== FETCHING DATA=================================
 
@@ -112,6 +112,7 @@ const QuotationBuilder: React.FC = () => {
   // =================== END OF FETCHING DATA=================================
 
   const scopeOfWorkNames = scopeOfWorks.map((scopeOfWork) => scopeOfWork.name);
+  console.log("scopeOfWorkNames", scopeOfWorkNames);
 
   const roomNames = rooms.map((room) => room.name);
 

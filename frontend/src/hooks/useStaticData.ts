@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import * as scopeOfWorksService from "../services/scopeOfWorks";
 import * as roomsService from "../services/rooms";
+import { RoomOption, ScopeOption } from "../types";
 
 interface StaticData {
-  scopeOfWorks: { _id: string; name: string }[];
-  rooms: { _id: string; name: string }[];
+  scopeOfWorks: ScopeOption[];
+  rooms: RoomOption[];
   isLoading: boolean;
   error: string | null;
 }
